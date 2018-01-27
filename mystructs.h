@@ -61,7 +61,6 @@ struct super_block {
  };
 
 struct super_operations {
-        struct inode *(*alloc_inode)(struct super_block *sb);
         void (*destroy_inode)(struct inode *);
         void (*read_inode) (struct inode *);
         void (*write_inode) (struct inode *, int);
@@ -89,7 +88,6 @@ struct inode {
 
 struct inode_operations {
         int (*create) (struct inode *, struct dentry *, int);
-        struct dentry * (*lookup) (struct inode *, struct dentry *);
         int (*link) (struct dentry *, struct inode *, struct dentry *);
         int (*unlink) (struct inode *, struct dentry *);
         //int (*symlink) (struct inode *, struct dentry *, const char *);
