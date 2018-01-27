@@ -1,4 +1,4 @@
-/* This file contains all the structures required to create a file system
+/* This file contains all the structures required to create a file system*/
 
 
 #include <fuse.h>
@@ -8,6 +8,16 @@
 #include <errno.h>
 #include <sys/time.h>
 
+
+struct file_system_type {
+    const char *name;
+    int fs_flags;
+    struct super_block *get_sb;
+    void (*kill_sb);
+    struct module *owner;
+    struct file_system_type *next;
+    struct list_head fs_supers;
+}
 
 struct stat {
     unsigned int     st_dev;         /* ID of device containing file */
