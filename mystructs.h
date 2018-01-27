@@ -9,15 +9,15 @@
 #include <sys/time.h>
 
 
-struct file_system_type {
-    const char *name;
-    int fs_flags;
-    struct super_block *get_sb;
-    void (*kill_sb);
-    struct module *owner;
-    struct file_system_type *next;
-    struct list_head fs_supers;
-};
+// struct file_system_type {
+//     const char *name;
+//     int fs_flags;
+//     struct super_block *get_sb;
+//     void (*kill_sb);
+//     struct module *owner;
+//     struct file_system_type *next;
+//     struct list_head fs_supers;
+// };
 
 struct vfsmount {
         struct list_head mnt_hash;
@@ -74,14 +74,8 @@ struct super_operations {
         void (*read_inode) (struct inode *);
         void (*dirty_inode) (struct inode *);
         void (*write_inode) (struct inode *, int);
-        void (*put_inode) (struct inode *);
-        void (*drop_inode) (struct inode *);
         void (*delete_inode) (struct inode *);
-        void (*put_super) (struct super_block *);
         void (*write_super) (struct super_block *);
-        int (*sync_fs)(struct super_block *sb, int wait);
-        void (*write_super_lockfs) (struct super_block *);
-        void (*unlockfs) (struct super_block *);
         int (*statfs) (struct super_block *, struct statfs *);
         int (*remount_fs) (struct super_block *, int *, char *);
         void (*clear_inode) (struct inode *);
@@ -136,21 +130,17 @@ struct inode_operations {
         struct dentry * (*lookup) (struct inode *, struct dentry *);
         int (*link) (struct dentry *, struct inode *, struct dentry *);
         int (*unlink) (struct inode *, struct dentry *);
-        int (*symlink) (struct inode *, struct dentry *, const char *);
+        //int (*symlink) (struct inode *, struct dentry *, const char *);
         int (*mkdir) (struct inode *, struct dentry *, int);
         int (*rmdir) (struct inode *, struct dentry *);
         int (*mknod) (struct inode *, struct dentry *, int, dev_t);
         int (*rename) (struct inode *, struct dentry *, struct inode *, struct dentry *);
         int (*readlink) (struct dentry *, char *,int);
-        int (*follow_link) (struct dentry *, struct nameidata *);
+        //int (*follow_link) (struct dentry *, struct nameidata *);
         void (*truncate) (struct inode *);
         int (*permission) (struct inode *, int);
         int (*setattr) (struct dentry *, struct iattr *);
         int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
-        int (*setxattr) (struct dentry *, const char *, const void *, size_t, int);
-        ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t);
-        ssize_t (*listxattr) (struct dentry *, char *, size_t);
-        int (*removexattr) (struct dentry *, const char *);
 };
 
 struct dentry {
@@ -218,25 +208,25 @@ struct file_operations {
         struct module *owner;
         loff_t (*llseek) (struct file *, loff_t, int);
         ssize_t (*read) (struct file *, char *, size_t, loff_t *);
-        ssize_t (*aio_read) (struct kiocb *, char *, size_t, loff_t);
+        //ssize_t (*aio_read) (struct kiocb *, char *, size_t, loff_t);
         ssize_t (*write) (struct file *, const char *, size_t, loff_t *);
-        ssize_t (*aio_write) (struct kiocb *, const char *, size_t, loff_t);
+        //ssize_t (*aio_write) (struct kiocb *, const char *, size_t, loff_t);
         int (*readdir) (struct file *, void *, filldir_t);
-        unsigned int (*poll) (struct file *, struct poll_table_struct *);
-        int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
-        int (*mmap) (struct file *, struct vm_area_struct *);
+        //unsigned int (*poll) (struct file *, struct poll_table_struct *);
+        //int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
+        //int (*mmap) (struct file *, struct vm_area_struct *);
         int (*open) (struct inode *, struct file *);
-        int (*flush) (struct file *);
+        //int (*flush) (struct file *);
         int (*release) (struct inode *, struct file *);
-        int (*fsync) (struct file *, struct dentry *, int datasync);
-        int (*aio_fsync) (struct kiocb *, int datasync);
-        int (*fasync) (int, struct file *, int);
-        int (*lock) (struct file *, int, struct file_lock *);
-        ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
-        ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
-        ssize_t (*sendfile) (struct file *, loff_t *, size_t, read_actor_t, void *);
-        ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
-        unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+        //int (*fsync) (struct file *, struct dentry *, int datasync);
+        //int (*aio_fsync) (struct kiocb *, int datasync);
+        //int (*fasync) (int, struct file *, int);
+        //int (*lock) (struct file *, int, struct file_lock *);
+        //ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
+        //ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
+        //ssize_t (*sendfile) (struct file *, loff_t *, size_t, read_actor_t, void *);
+        //ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
+        //unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
 };
 
 struct files_struct { 
