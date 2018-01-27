@@ -153,6 +153,128 @@ struct inode_operations {
         int (*removexattr) (struct dentry *, const char *);
 };
 
+struct dentry {
+        atomic_t        d_count;
+        unsigned int    d_flags;
+        int             d_mounted;
+        struct inode    *d_inode;
+        struct hlist_node   d_hash;
+        struct dentry *d_parent;        /* parent directory */
+        struct qstr d_name;
+        struct list_head d_lru;         /* LRU list */
+        union {
+            struct list_head     d_child;      /* list of dentries within */ 
+            struct rcu_head      d_rcu;        /* RCU locking */
+        } d_u;         
+        struct list_head d_subdirs;     /* our children */
+        struct hlist_node d_alias;      /* inode alias list */
+        unsigned long d_time;           /* used by d_revalidate */
+        const struct dentry_operations *d_op;
+        struct super_block *d_sb;       /* The root of the dentry tree */
+        void *d_fsdata;                 /* fs-specific data */
+        unsigned char d_iname[DNAME_INLINE_LEN];        /* small names */
+};
+
+
+struct dentry_operations {
+        int (*d_revalidate)(struct dentry *, int);
+        int (*d_hash) (struct dentry *, struct qstr *);
+        int (*d_compare) (struct dentry *, struct qstr *, struct qstr *);
+        int (*d_delete)(struct dentry *);
+        void (*d_release)(struct dentry *);
+        void (*d_iput)(struct dentry *, struct inode *);
+};
+
+struct file { 
+    union {
+        struct list_head   fu_list;       /* list of file objects */ 
+        struct rcu_head    fu_rcuhead;    /* RCU list after freeing */
+    } f_u; 
+    struct path            f_path;        /* contains the dentry */ 
+    struct file_operations *f_op;         /* file operations table */ 
+    atomic_t               f_count;       /* file object’s usage count */ 
+    unsigned int           f_flags;       /* flags specified on open */ 
+    mode_t                 f_mode;        /* file access mode */ 
+    loff_t                 f_pos;         /* file offset (file pointer) */ 
+    struct fown_struct     f_owner;       /* owner data for signals */ 
+    const struct cred      *f_cred;       /* file credentials */ 
+    struct file_ra_state   f_ra; 
+    /* read-ahead state */ 
+    u64                    f_version;     /* version number */ 
+    void                   *f_security;   /* security module */ 
+    void                   *private_data; /* tty driver hook */
+    struct list_head       f_ep_links;    /* list of epoll links */
+    struct address_space   *f_mapping;    /* page cache mapping */ 
+    unsigned long          f_mnt_write_state; /* debugging state */
+};
+
+struct qstr {
+        const unsigned char *name;
+        unsigned int len;
+        unsigned int hash;
+};
+
+struct file_operations {
+        struct module *owner;
+        loff_t (*llseek) (struct file *, loff_t, int);
+        ssize_t (*read) (struct file *, char *, size_t, loff_t *);
+        ssize_t (*aio_read) (struct kiocb *, char *, size_t, loff_t);
+        ssize_t (*write) (struct file *, const char *, size_t, loff_t *);
+        ssize_t (*aio_write) (struct kiocb *, const char *, size_t, loff_t);
+        int (*readdir) (struct file *, void *, filldir_t);
+        unsigned int (*poll) (struct file *, struct poll_table_struct *);
+        int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
+        int (*mmap) (struct file *, struct vm_area_struct *);
+        int (*open) (struct inode *, struct file *);
+        int (*flush) (struct file *);
+        int (*release) (struct inode *, struct file *);
+        int (*fsync) (struct file *, struct dentry *, int datasync);
+        int (*aio_fsync) (struct kiocb *, int datasync);
+        int (*fasync) (int, struct file *, int);
+        int (*lock) (struct file *, int, struct file_lock *);
+        ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
+        ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
+        ssize_t (*sendfile) (struct file *, loff_t *, size_t, read_actor_t, void *);
+        ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
+        unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+};
+
+struct files_struct { 
+    atomic_t               count;              /* usage count */ 
+    struct fdtable         *fdt;               /* pointer to other fd table */ 
+    struct fdtable         fdtab;              /* base fd table */ 
+    spinlock_t             file_lock;          /* per-file lock */ 
+    int                     next_fd; 
+    /* cache of next available fd */ 
+    struct embedded_fd_set close_on_exec_init; /* list of close-on-exec fds */ 
+    struct embedded_fd_set open_fds_init       /* list of open fds */ 
+    struct file            *fd_array[NR_OPEN_DEFAULT]; /* base files array */
+};
+
+struct fs_struct { 
+    int         users;    /* user count */ 
+    rwlock_t    lock;     /* per-structure lock */ 
+    int         umask;    /* umask */ 
+    int         in_exec;  /* currently executing a file */ 
+    struct path root;     /* root directory */ 
+    struct path pwd;      /* current working directory */
+};
+
+struct nameidata {
+        struct dentry *dentry;
+        struct vfsmount *mnt;
+        struct qstr last;
+        unsigned int flags;
+        int last_type;
+};
+
+struct mnt_namespace { 
+    atomic_t            count; /* usage count */ 
+    struct vfsmount     *root; /* root directory */
+    struct list_head    list;  /* list of mount points */ 
+    wait_queue_head_t   poll;  /* polling waitqueue */ 
+    int                 event; /* event count */
+};  
 
 struct stat {
     unsigned int     st_dev;         /* ID of device containing file */
