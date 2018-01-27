@@ -17,7 +17,51 @@ struct file_system_type {
     struct module *owner;
     struct file_system_type *next;
     struct list_head fs_supers;
-}
+};
+
+struct vfsmount {
+        struct list_head mnt_hash;
+        struct vfsmount *mnt_parent;    /* fs we are mounted on */
+        struct dentry *mnt_mountpoint;  /* dentry of mountpoint */
+        struct dentry *mnt_root;        /* root of the mounted tree */
+        struct super_block *mnt_sb;     /* pointer to superblock */
+        struct list_head mnt_mounts;    /* list of children, anchored here */
+        struct list_head mnt_child;     /* and going through their mnt_child */
+        atomic_t mnt_count;
+        int mnt_flags;
+        char *mnt_devname;              /* Name of device e.g. /dev/dsk/hda1 */
+        struct list_head mnt_list;
+};
+
+struct super_block {
+        struct list_head        s_list;
+        dev_t                   s_dev;
+        unsigned char           s_blocksize_bits;
+        unsigned long           s_blocksize;
+        unsigned long           s_old_blocksize;
+        unsigned char           s_dirt;
+        unsigned long long      s_maxbytes;
+        struct file_system_type *s_type;
+        const struct super_operations   *s_op;
+        const struct dquot_operations   *dq_op;
+        const struct quotactl_ops       *s_qcop;
+        const struct export_operations *s_export_op;
+        unsigned long           s_flags;
+        unsigned long           s_magic;
+        struct dentry           *s_root;
+        int                     s_count;
+        atomic_t                s_active;
+        struct list_head        s_dirty;
+        struct list_head        s_io;
+        struct hlist_head       s_anon;
+        struct list_head        s_files;
+        struct block_device     *s_bdev;
+        struct hlist_node       s_instances;
+        struct quota_info       s_dquot;
+        char                    s_id[32];
+        void                    *s_fs_info;
+ };
+
 
 struct stat {
     unsigned int     st_dev;         /* ID of device containing file */
