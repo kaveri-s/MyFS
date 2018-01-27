@@ -84,7 +84,7 @@ struct inode {
         struct super_block *i_sb;
         struct address_space *i_mapping;
         struct list_head i_dentry;
-}
+};
 
 struct inode_operations {
         int (*create) (struct inode *, struct dentry *, int);
