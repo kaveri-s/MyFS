@@ -12,7 +12,7 @@ struct stat {
     unsigned int    st_dev;         /* ID of device containing file */
     unsigned int    st_ino;         /* inode number */
     unsigned int    st_mode;        /* protection */
-	unsigned int    st_uid;         /* user ID of owner */
+    unsigned int    st_uid;         /* user ID of owner */
 	unsigned int    st_gid;         /* group ID of owner */
     unsigned int    st_rdev;        /* device ID (if special file) */
     unsigned int    st_size;        /* total size, in bytes */
@@ -141,11 +141,11 @@ struct file_operations {
         int (*release) (struct inode *, struct file *);
 };
 
-struct fs_struct { 
-    int         users;    /* user count */ 
-    int         umask;    /* umask */ 
-    int         in_exec;  /* currently executing a file */ 
-    struct path root;     /* root directory */ 
+struct fs_struct {
+    int         users;    /* user count */
+    int         umask;    /* umask */
+    int         in_exec;  /* currently executing a file */
+    struct path root;     /* root directory */
     struct path pwd;      /* current working directory */
 };
 
@@ -155,5 +155,4 @@ struct nameidata {
         struct qstr last;
         unsigned int flags;
         int last_type;
-};  
-
+};

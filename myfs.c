@@ -1,11 +1,4 @@
 /*
-  FUSE: Filesystem in Userspace
-  Copyright (C) 2001-2007  Miklos Szeredi <miklos@szeredi.hu>
-  Copyright (C) 2011       Sebastian Pipping <sebastian@pipping.org>
-
-  This program can be distributed under the terms of the GNU GPL.
-  See the file COPYING.
-
   gcc -Wall fusexmp.c `pkg-config fuse --cflags --libs` -o fusexmp
 */
 
@@ -21,11 +14,53 @@
 #endif
 
 #include <fuse.h>
-#include "mystructs.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <errno.h>
+#include <sys/time.h>
 
-int getattr(const char *path, struct stat *stbuf)
+static int fs_init(struct fuse_conn_info *conn, struct fuse_config *cfg)
+{
+	(void) conn;
+	cfg->kernel_cache = 1;
+	return NULL;
+}
+
+static int fs_getattr(const char *path, struct stat *stbuf)
 {
 	int res;
+
+    if(argc != 2)    
+        return 1;
+ 
+    struct stat fileStat;
+    if(stat(argv[1],&fileStat) < 0)    
+        return 1;
+ 
+    printf("Information for %s\n",argv[1]);
+    printf("---------------------------\n");
+    printf("File Size: \t\t%d bytes\n",fileStat.st_size);
+    printf("Number of Links: \t%d\n",fileStat.st_nlink);
+    printf("File inode: \t\t%d\n",fileStat.st_ino);
+ 
+    printf("File Permissions: \t");
+    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
+    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
+    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
+    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
+    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
+    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+    printf("\n\n");
+
+    return 0;
 
 	res = lstat(path, stbuf);
 	if (res == -1)
@@ -34,7 +69,7 @@ int getattr(const char *path, struct stat *stbuf)
 	return 0;
 }
 
-int access(const char *path, int mask)
+static int fs_access(const char *path, int mask)
 {
 	int res;
 
@@ -45,20 +80,7 @@ int access(const char *path, int mask)
 	return 0;
 }
 
-int readlink(const char *path, char *buf, size_t size)
-{
-	int res;
-
-	res = readlink(path, buf, size - 1);
-	if (res == -1)
-		return -errno;
-
-	buf[res] = '\0';
-	return 0;
-}
-
-
-int readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
+static int fs_opendir(const char *, struct fuse_file_info *)
 {
 	DIR *dp;
 	struct dirent *de;
@@ -83,27 +105,33 @@ int readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, s
 	return 0;
 }
 
-int mknod(const char *path, mode_t mode, dev_t rdev)
+static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
+		       off_t offset, struct fuse_file_info *fi)
 {
-	int res;
+	DIR *dp;
+	struct dirent *de;
 
-	/* On Linux this could just be 'mknod(path, mode, rdev)' but this
-	   is more portable */
-	if (S_ISREG(mode)) {
-		res = open(path, O_CREAT | O_EXCL | O_WRONLY, mode);
-		if (res >= 0)
-			res = close(res);
-	} else if (S_ISFIFO(mode))
-		res = mkfifo(path, mode);
-	else
-		res = mknod(path, mode, rdev);
-	if (res == -1)
+	(void) offset;
+	(void) fi;
+
+	dp = opendir(path);
+	if (dp == NULL)
 		return -errno;
 
+	while ((de = readdir(dp)) != NULL) {
+		struct stat st;
+		memset(&st, 0, sizeof(st));
+		st.st_ino = de->d_ino;
+		st.st_mode = de->d_type << 12;
+		if (filler(buf, de->d_name, &st, 0))
+			break;
+	}
+
+	closedir(dp);
 	return 0;
 }
 
-int mkdir(const char *path, mode_t mode)
+static int fs_mkdir(const char *path, mode_t mode)
 {
 	int res;
 
@@ -114,7 +142,7 @@ int mkdir(const char *path, mode_t mode)
 	return 0;
 }
 
-int unlink(const char *path)
+static int fs_unlink(const char *path)
 {
 	int res;
 
@@ -125,7 +153,7 @@ int unlink(const char *path)
 	return 0;
 }
 
-int rmdir(const char *path)
+static int fs_rmdir(const char *path)
 {
 	int res;
 
@@ -136,7 +164,7 @@ int rmdir(const char *path)
 	return 0;
 }
 
-int rename(const char *from, const char *to)
+static int fs_rename(const char *from, const char *to)
 {
 	int res;
 
@@ -147,40 +175,7 @@ int rename(const char *from, const char *to)
 	return 0;
 }
 
-int chmod(const char *path, mode_t mode)
-{
-	int res;
-
-	res = chmod(path, mode);
-	if (res == -1)
-		return -errno;
-
-	return 0;
-}
-
-int chown(const char *path, uid_t uid, gid_t gid)
-{
-	int res;
-
-	res = lchown(path, uid, gid);
-	if (res == -1)
-		return -errno;
-
-	return 0;
-}
-
-int truncate(const char *path, off_t size)
-{
-	int res;
-
-	res = truncate(path, size);
-	if (res == -1)
-		return -errno;
-
-	return 0;
-}
-
-int open(const char *path, struct fuse_file_info *fi)
+static int fs_open(const char *path, struct fuse_file_info *fi)
 {
 	int res;
 
@@ -192,7 +187,8 @@ int open(const char *path, struct fuse_file_info *fi)
 	return 0;
 }
 
-int read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int fs_read(const char *path, char *buf, size_t size, off_t offset,
+		    struct fuse_file_info *fi)
 {
 	int fd;
 	int res;
@@ -210,7 +206,8 @@ int read(const char *path, char *buf, size_t size, off_t offset, struct fuse_fil
 	return res;
 }
 
-int write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
+static int fs_write(const char *path, const char *buf, size_t size,
+		     off_t offset, struct fuse_file_info *fi)
 {
 	int fd;
 	int res;
@@ -228,7 +225,7 @@ int write(const char *path, const char *buf, size_t size, off_t offset, struct f
 	return res;
 }
 
-int statfs(const char *path, struct statvfs *stbuf)
+static int fs_statfs(const char *path, struct statvfs *stbuf)
 {
 	int res;
 
@@ -238,6 +235,24 @@ int statfs(const char *path, struct statvfs *stbuf)
 
 	return 0;
 }
+
+
+
+static struct fuse_operations xmp_oper = {
+    .init       = fs_init,
+	.getattr	= fs_getattr,
+	.access		= fs_access,
+    .opendir    = fs_opendir,
+	.readdir	= fs_readdir,
+	.mkdir		= fs_mkdir,
+    .unlink     = fs_unlink,
+	.rmdir		= fs_rmdir,
+	.rename		= fs_rename,
+	.open		= fs_open,
+	.read		= fs_read,
+	.write		= fs_write,
+	.statfs		= fs_statfs,
+};
 
 int main(int argc, char *argv[])
 {
