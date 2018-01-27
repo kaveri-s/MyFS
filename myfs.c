@@ -21,33 +21,9 @@
 #endif
 
 #include <fuse.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <errno.h>
-#include <sys/time.h>
+#include "mystructs.h"
 
-struct stat {
-    unsigned int     st_dev;         /* ID of device containing file */
-    unsigned int     st_ino;         /* inode number */
-    unsigned int    st_mode;        /* protection */
-    unsigned int   st_nlink;       /* number of hard links */
-	unsigned int     st_uid;         /* user ID of owner */
-	unsigned int     st_gid;         /* group ID of owner */
-    unsigned int     st_rdev;        /* device ID (if special file) */
-    unsigned int     st_size;        /* total size, in bytes */
-    unsigned int st_blksize;     /* blocksize for filesystem I/O */
-    unsigned int  st_blocks;      /* number of 512B blocks allocated */
-    unsigned int st_atim;  /* time of last access */
-    unsigned int st_mtim;  /* time of last modification */
-	unsigned int st_ctim;  /* time of last status change */
-};
-
-
-static int xmp_getattr(const char *path, struct stat *stbuf)
+int getattr(const char *path, struct stat *stbuf)
 {
 	int res;
 
@@ -58,7 +34,7 @@ static int xmp_getattr(const char *path, struct stat *stbuf)
 	return 0;
 }
 
-static int xmp_access(const char *path, int mask)
+int access(const char *path, int mask)
 {
 	int res;
 
@@ -69,7 +45,7 @@ static int xmp_access(const char *path, int mask)
 	return 0;
 }
 
-static int xmp_readlink(const char *path, char *buf, size_t size)
+int readlink(const char *path, char *buf, size_t size)
 {
 	int res;
 
@@ -82,8 +58,7 @@ static int xmp_readlink(const char *path, char *buf, size_t size)
 }
 
 
-static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-		       off_t offset, struct fuse_file_info *fi)
+int readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi)
 {
 	DIR *dp;
 	struct dirent *de;
@@ -108,7 +83,7 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	return 0;
 }
 
-static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
+int mknod(const char *path, mode_t mode, dev_t rdev)
 {
 	int res;
 
@@ -128,7 +103,7 @@ static int xmp_mknod(const char *path, mode_t mode, dev_t rdev)
 	return 0;
 }
 
-static int xmp_mkdir(const char *path, mode_t mode)
+int mkdir(const char *path, mode_t mode)
 {
 	int res;
 
@@ -139,7 +114,7 @@ static int xmp_mkdir(const char *path, mode_t mode)
 	return 0;
 }
 
-static int xmp_unlink(const char *path)
+int unlink(const char *path)
 {
 	int res;
 
@@ -150,7 +125,7 @@ static int xmp_unlink(const char *path)
 	return 0;
 }
 
-static int xmp_rmdir(const char *path)
+int rmdir(const char *path)
 {
 	int res;
 
@@ -161,18 +136,7 @@ static int xmp_rmdir(const char *path)
 	return 0;
 }
 
-static int xmp_symlink(const char *from, const char *to)
-{
-	int res;
-
-	res = symlink(from, to);
-	if (res == -1)
-		return -errno;
-
-	return 0;
-}
-
-static int xmp_rename(const char *from, const char *to)
+int rename(const char *from, const char *to)
 {
 	int res;
 
@@ -183,18 +147,7 @@ static int xmp_rename(const char *from, const char *to)
 	return 0;
 }
 
-static int xmp_link(const char *from, const char *to)
-{
-	int res;
-
-	res = link(from, to);
-	if (res == -1)
-		return -errno;
-
-	return 0;
-}
-
-static int xmp_chmod(const char *path, mode_t mode)
+int chmod(const char *path, mode_t mode)
 {
 	int res;
 
@@ -205,7 +158,7 @@ static int xmp_chmod(const char *path, mode_t mode)
 	return 0;
 }
 
-static int xmp_chown(const char *path, uid_t uid, gid_t gid)
+int chown(const char *path, uid_t uid, gid_t gid)
 {
 	int res;
 
@@ -216,7 +169,7 @@ static int xmp_chown(const char *path, uid_t uid, gid_t gid)
 	return 0;
 }
 
-static int xmp_truncate(const char *path, off_t size)
+int truncate(const char *path, off_t size)
 {
 	int res;
 
@@ -227,7 +180,7 @@ static int xmp_truncate(const char *path, off_t size)
 	return 0;
 }
 
-static int xmp_open(const char *path, struct fuse_file_info *fi)
+int open(const char *path, struct fuse_file_info *fi)
 {
 	int res;
 
@@ -239,8 +192,7 @@ static int xmp_open(const char *path, struct fuse_file_info *fi)
 	return 0;
 }
 
-static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
-		    struct fuse_file_info *fi)
+int read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	int fd;
 	int res;
@@ -258,8 +210,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	return res;
 }
 
-static int xmp_write(const char *path, const char *buf, size_t size,
-		     off_t offset, struct fuse_file_info *fi)
+int write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
 	int fd;
 	int res;
@@ -277,7 +228,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 	return res;
 }
 
-static int xmp_statfs(const char *path, struct statvfs *stbuf)
+int statfs(const char *path, struct statvfs *stbuf)
 {
 	int res;
 
@@ -287,28 +238,6 @@ static int xmp_statfs(const char *path, struct statvfs *stbuf)
 
 	return 0;
 }
-
-static struct fuse_operations xmp_oper = {
-	.getattr	= xmp_getattr,
-	.access		= xmp_access,
-	.readlink	= xmp_readlink,
-	.readdir	= xmp_readdir,
-	.mknod		= xmp_mknod,
-	.mkdir		= xmp_mkdir,
-	.symlink	= xmp_symlink,
-	.unlink		= xmp_unlink,
-	.rmdir		= xmp_rmdir,
-	.rename		= xmp_rename,
-	.link		= xmp_link,
-	.chmod		= xmp_chmod,
-	.chown		= xmp_chown,
-	.truncate	= xmp_truncate,
-	.open		= xmp_open,
-	.read		= xmp_read,
-	.write		= xmp_write,
-	.statfs		= xmp_statfs,
-};
-
 
 int main(int argc, char *argv[])
 {
