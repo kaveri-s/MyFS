@@ -51,16 +51,107 @@ struct super_block {
         struct dentry           *s_root;
         int                     s_count;
         atomic_t                s_active;
+        struct list_head        s_inodes;
         struct list_head        s_dirty;
-        struct list_head        s_io;
         struct hlist_head       s_anon;
         struct list_head        s_files;
+        struct list_head        s_dentry_lru;
         struct block_device     *s_bdev;
+        struct mtd_info         *s_mtd;
         struct hlist_node       s_instances;
         struct quota_info       s_dquot;
         char                    s_id[32];
         void                    *s_fs_info;
+        fmode_t                 s_mode;
+        u32                     s_time_gran;
+        char                    *s_subtype;
+        char                    *s_options;
  };
+
+struct super_operations {
+        struct inode *(*alloc_inode)(struct super_block *sb);
+        void (*destroy_inode)(struct inode *);
+        void (*read_inode) (struct inode *);
+        void (*dirty_inode) (struct inode *);
+        void (*write_inode) (struct inode *, int);
+        void (*put_inode) (struct inode *);
+        void (*drop_inode) (struct inode *);
+        void (*delete_inode) (struct inode *);
+        void (*put_super) (struct super_block *);
+        void (*write_super) (struct super_block *);
+        int (*sync_fs)(struct super_block *sb, int wait);
+        void (*write_super_lockfs) (struct super_block *);
+        void (*unlockfs) (struct super_block *);
+        int (*statfs) (struct super_block *, struct statfs *);
+        int (*remount_fs) (struct super_block *, int *, char *);
+        void (*clear_inode) (struct inode *);
+        void (*umount_begin) (struct super_block *);
+        int (*show_options)(struct seq_file *, struct vfsmount *);
+};
+
+struct inode {
+        struct hlist_node       i_hash;
+        struct list_head        i_list;
+        struct list_head        i_sb_list;
+        struct list_head        i_dentry;
+        unsigned long           i_ino;
+        atomic_t                i_count;
+        unsigned int            i_nlink;
+        uid_t                   i_uid;
+        gid_t                   i_gid;
+        kdev_t                  i_rdev;
+        u64                     i_version;
+        loff_t                  i_size;
+        seqcount_t              i_size_seqcount;
+        struct timespec         i_atime;
+        struct timespec         i_mtime;
+        struct timespec         i_ctime;
+        unsigned int            i_blkbits;
+        blkcnt_t                i_blocks;
+        unsigned short          i_bytes;
+        umode_t                 i_mode;
+        const struct inode_operations   *i_op;
+        const struct file_operations    *i_fop;
+        struct super_block      *i_sb;
+        struct address_space    *i_mapping;
+        struct address_space    i_data;
+        struct dquot            *i_dqot[MAXQUOTAS];
+        struct list_head        i_devices;
+        union {
+                struct pipe_inode_info  *i_pipe;
+                struct block_device     *i_bdev;
+                struct cdev             *i_cdev;
+        };
+        unsigned long           i_dnotify_mask;
+        struct dnotify_struct   *i_dnotify;
+        struct list_head        inotify_watches;
+        unsigned long           i_state;
+        unsigned long           dirtied_when;
+        unsigned int            i_flags;
+        atomic_t                i_writecount;
+};
+
+struct inode_operations {
+        int (*create) (struct inode *, struct dentry *, int);
+        struct dentry * (*lookup) (struct inode *, struct dentry *);
+        int (*link) (struct dentry *, struct inode *, struct dentry *);
+        int (*unlink) (struct inode *, struct dentry *);
+        int (*symlink) (struct inode *, struct dentry *, const char *);
+        int (*mkdir) (struct inode *, struct dentry *, int);
+        int (*rmdir) (struct inode *, struct dentry *);
+        int (*mknod) (struct inode *, struct dentry *, int, dev_t);
+        int (*rename) (struct inode *, struct dentry *, struct inode *, struct dentry *);
+        int (*readlink) (struct dentry *, char *,int);
+        int (*follow_link) (struct dentry *, struct nameidata *);
+        void (*truncate) (struct inode *);
+        int (*permission) (struct inode *, int);
+        int (*setattr) (struct dentry *, struct iattr *);
+        int (*getattr) (struct vfsmount *mnt, struct dentry *, struct kstat *);
+        int (*setxattr) (struct dentry *, const char *, const void *, size_t, int);
+        ssize_t (*getxattr) (struct dentry *, const char *, void *, size_t);
+        ssize_t (*listxattr) (struct dentry *, char *, size_t);
+        int (*removexattr) (struct dentry *, const char *);
+};
 
 
 struct stat {
