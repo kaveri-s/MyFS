@@ -1,5 +1,5 @@
 /*
-  gcc -Wall fusexmp.c `pkg-config fuse --cflags --libs` -o fusexmp
+  gcc -Wall myfs.c `pkg-config fuse --cflags --libs` -o myfs
 */
 
 #define FUSE_USE_VERSION 26
@@ -21,9 +21,12 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <errno.h>
+#include <stddef.h>
+#include <assert.h>
 #include <sys/time.h>
 
-static int fs_init(struct fuse_conn_info *conn, struct fuse_config *cfg)
+
+static void *fs_init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
 	(void) conn;
 	cfg->kernel_cache = 1;
@@ -37,27 +40,27 @@ static int fs_getattr(const char *path, struct stat *stbuf)
     if(argc != 2)    
         return 1;
  
-    struct stat fileStat;
-    if(stat(argv[1],&fileStat) < 0)    
+
+    if(stat(argv[1],&stbuf) < 0)    
         return 1;
  
     printf("Information for %s\n",argv[1]);
     printf("---------------------------\n");
-    printf("File Size: \t\t%d bytes\n",fileStat.st_size);
-    printf("Number of Links: \t%d\n",fileStat.st_nlink);
-    printf("File inode: \t\t%d\n",fileStat.st_ino);
+    printf("File Size: \t\t%d bytes\n",stbuf->st_size);
+    printf("Number of Links: \t%d\n",stbuf->st_nlink);
+    printf("File inode: \t\t%d\n",stbuf->st_ino);
  
     printf("File Permissions: \t");
-    printf( (S_ISDIR(fileStat.st_mode)) ? "d" : "-");
-    printf( (fileStat.st_mode & S_IRUSR) ? "r" : "-");
-    printf( (fileStat.st_mode & S_IWUSR) ? "w" : "-");
-    printf( (fileStat.st_mode & S_IXUSR) ? "x" : "-");
-    printf( (fileStat.st_mode & S_IRGRP) ? "r" : "-");
-    printf( (fileStat.st_mode & S_IWGRP) ? "w" : "-");
-    printf( (fileStat.st_mode & S_IXGRP) ? "x" : "-");
-    printf( (fileStat.st_mode & S_IROTH) ? "r" : "-");
-    printf( (fileStat.st_mode & S_IWOTH) ? "w" : "-");
-    printf( (fileStat.st_mode & S_IXOTH) ? "x" : "-");
+    printf( (S_ISDIR(stbuf->st_mode)) ? "d" : "-");
+    printf( (stbuf->st_mode & S_IRUSR) ? "r" : "-");
+    printf( (stbuf->st_mode & S_IWUSR) ? "w" : "-");
+    printf( (stbuf->st_mode & S_IXUSR) ? "x" : "-");
+    printf( (stbuf->st_mode & S_IRGRP) ? "r" : "-");
+    printf( (stbuf->st_mode & S_IWGRP) ? "w" : "-");
+    printf( (stbuf->st_mode & S_IXGRP) ? "x" : "-");
+    printf( (stbuf->st_mode & S_IROTH) ? "r" : "-");
+    printf( (stbuf->st_mode & S_IWOTH) ? "w" : "-");
+    printf( (stbuf->st_mode & S_IXOTH) ? "x" : "-");
     printf("\n\n");
 
     return 0;
@@ -238,7 +241,7 @@ static int fs_statfs(const char *path, struct statvfs *stbuf)
 
 
 
-static struct fuse_operations xmp_oper = {
+static struct fuse_operations fs_oper = {
     .init       = fs_init,
 	.getattr	= fs_getattr,
 	.access		= fs_access,
@@ -256,6 +259,7 @@ static struct fuse_operations xmp_oper = {
 
 int main(int argc, char *argv[])
 {
-	umask(0);
-	return fuse_main(argc, argv, &xmp_oper, NULL);
+	struct fuse_args args = FUSE_ARGS_INIT(argc, argv);
+
+	return fuse_main(argc, argv, &fs_oper, NULL);
 }
