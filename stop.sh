@@ -1,0 +1,2 @@
+fusermount -u temp
+
