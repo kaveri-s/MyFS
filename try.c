@@ -15,6 +15,9 @@
 #define BLOCK_NO 100
 #define INODE_SIZE 88
 #define INODE_NO 45
+#define SUB_NO 59
+#define MAX_NAME_LEN 64
+#define MAX_MAP 3
 
 #define AT (1 << 0)
 #define CT (1 << 1)
@@ -47,16 +50,16 @@ struct myinode {
     time_t st_atim;         //access time
     time_t st_ctim;         //creation time
 
-    int direct_blk[3];      //blocks mapped to
+    int direct_blk[MAX_MAP];      //blocks mapped to
     file_type type;  //0-free    1-file      2-directory
 
 };
 
 //Reducing limit to 60 files in a directory and 64 characters in the name
 struct mydirent {
-    char name[64];      //name of dir
-    char subs[59][64];  //names of contents
-    int sub_id[59];     //inode ids of contents
+    char name[MAX_NAME_LEN];      //name of dir
+    char subs[SUB_NO][MAX_NAME_LEN];  //names of contents
+    int sub_id[SUB_NO];     //inode ids of contents
     char extra[20];
 };
 
@@ -102,7 +105,7 @@ static void init_fs() {
         ino->st_id=i;
         ino->type=FREE;
         ino->st_blocks=0;
-        memcpy(fs+(i*104), ino, INODE_SIZE);
+        memcpy(fs+(i*INODE_SIZE), ino, INODE_SIZE);
     }
 
     printf("\nInitialised rest of the inodes");

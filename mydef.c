@@ -7,14 +7,14 @@
 
 // Node Functions
 
-int getnodebypath(const char *path, struct myinode *parent, struct myinode *node) {
+int getnodebypath(const char *path, struct myinode *parent, struct myinode *child) {
   if(!S_ISDIR(parent->st_mode)) {
     errno = ENOTDIR;
     return 0;
   }
 
   if(path[1] == '\0') {
-    node = parent;
+    memcpy(child, parent, INODE_SIZE);
     return 1;
   }
 
@@ -28,81 +28,92 @@ int getnodebypath(const char *path, struct myinode *parent, struct myinode *node
   }
 
   // Search directory
-  struct myinode *child;
-  if(!dir_find(parent, name, len, child)) {
+  struct myinode *node;
+  if(!dir_find(parent, name, len, node)) {
     errno = ENOENT;
     return 0;
   }
 
   if(*end == '\0') {
     // Last node in path
-    memcpy(node, fs[dirent->direct_blk[0]*INODE_SIZE]);
+    memcpy(child, node, INODE_SIZE);
+    free(node);
     return 1;
   } else {
     // Not the last node in path (or a trailing slash)
-    return getnodebypath(end, dirent->node, node);
+    return getnodebypath(end, node, child);
   }
 }
 
 
 //Directory Functions
-int dir_add(struct myinode *dirnode, struct mydirent *entry) {
-  struct mydirent *dir = (struct mydirent *) fs[parent->direct_blk[0]];
-  struct myinode *existing_entry;
+int dir_add(ino_t pi_id, ino_t ci_id, struct mydirent *cdir, char *name) {
+  
+  struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
 
-  if(dir_find(dirnode, entry->name, strlen(entry->name), existing_entry)) {
-    errno = EEXIST;
-    return 0;
+  strcpy(dir->name, name);
+
+  //set self and parent inodes
+  strncpy(dir->subs[0], ".", 1);
+  dir->sub_id[0] = pi_id;
+  
+  strncpy(dir->subs[1], "..", 2);
+  dir->sub_id[1] = ci_id;
+
+  //sub_id of -1 means that the directory can map a file name and id at that index
+  for(int i=2;i<SUB_NO; i++) {
+    dir->sub_id[i] = -1;
   }
 
-  if(*dir == NULL) {
-    *dir = entry;
-    entry->next = NULL;
-  } else {
-    entry->next = *dir;
-    *dir = entry;
-  }
-
-  entry->node->mystat.st_nlink++;
-
-  if(S_ISDIR(entry->node->mystat.st_mode)) {
-    dirnode->mystat.st_nlink++;
-  }
+  memcpy(cdir, dir, BLOCKSIZE);
+  free(dir);
 
   return 1;
 }
 
 int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *child) {
   
-  if(!dir_add(parent, entry)) {
-    free(entry);
+  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
+
+  if(len(name)>MAX_NAME_LEN) {
+    errno = ENAMETOOLONG;
     return 0;
   }
-  
-  return 1;
-}
 
-int dir_remove(struct myinode *dirnode, const char *name) {
-  struct mydirent **dir = (struct mydirent **) &dirnode->data;
-
-  struct mydirent *ent = *dir;
-  struct mydirent **ptr = dir;
-
-  while(ent != NULL) {
-    if(strcmp(ent->name, name) == 0) {
-      *ptr = ent->next;
-
-      if(S_ISDIR(ent->node->mystat.st_mode)) {
-        dirnode->mystat.st_nlink--;
-      }
-
-      free(ent);
-
+  for(int i=2;i<59;i++) { //search all subs from 2 (0 and 1 are for . and ..)
+    if(pdir->sub_id[i]==-1) { //if the directory can hold more files/dirs
+      strcpy(pdir->subs[i], name); //copy the name of the file/dir
+      pdir->sub_id[i]=child->st_id; //map the name to inode of file/dir
       return 1;
     }
+  }
 
-    ptr = &ent->next;
-    ent = ent->next;
+  errno = EMLINK; //directory cannot hold more files/dirs
+
+  return 0;
+
+}
+
+int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
+  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
+
+  struct mydirent *cdir = (struct mydirent *)fs[child->direct_blk[0]];
+
+  for(int i=2;i<SUB_NO;i++) { //check if directory is empty
+    if(cdir->sub_id!=-1) {
+      errno = ENOTEMPTY;
+      return 0;
+    }
+  }
+
+  memset(cdir, 0, BLOCKSIZE); //clear the child's directory entry
+
+  for(int i=2;i<SUB_NO;i++) { //reset child's name and inode id in the parent dirent
+    if(strcmp(name, pdir->subs[i])==0) {
+      memset(pdir->subs[i], 0, MAX_NAME_LEN);
+      pdir->sub_id[i]=-1;
+      return 0;
+    }
   }
 
   errno = ENOENT;
@@ -111,13 +122,15 @@ int dir_remove(struct myinode *dirnode, const char *name) {
 }
 
 int dir_find(struct myinode *parent, const char *name, int namelen, struct myinode *child) {
-  struct mydirent *ent = (struct mydirent *) fs[parent->direct_blk[0]]; //if it is a directory inode it should point to a dirent structure
+  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]]; //get dirent of parent
 
-  for(int i=2;i<59;i++) {
-    if(ent->sub_id[i]!=-1){
-      if(len(ent->subs[i]==namelen){
-        if(strncmp(ent->subs[i], name, namelen)) {
-          memcpy(child, fs[ent->sub_id[i]*INODE_SIZE], INODE_SIZE);
+  for(int i=2;i<59;i++) { //search all subs from 2 (0 and 1 are for . and ..)
+    if(pdir->sub_id[i]!=-1) { //if it maps to a valid inode
+      if(len(pdir->subs[i])==namelen) { //if the length of the sub_name matches namelen
+        if(strncmp(pdir->subs[i], name, namelen)==0) { //if sub_name matches name
+          int idchild = pdir->sub_id[i]; //get inode_id at that index
+          memcpy(child, fs[idchild*INODE_SIZE], INODE_SIZE); //retrieve child's inode information from fs
+          return 1;
         }
       }
     }
