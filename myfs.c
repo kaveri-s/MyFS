@@ -68,11 +68,11 @@ static int inode_entry(const char *path, mode_t mode) {
   //Check for free blocks
   int blk = 0;
   for(int b=3;b<BLOCK_NO; b++) {
-    if(free_blks[b]!=0)
+    if(free_blks[b]==0)
       blk = b;
   }
 
-  if(blk==0){
+  if(blk == 0){
     errno = ENOMEM;
     return -errno;
   }
@@ -102,6 +102,7 @@ static int inode_entry(const char *path, mode_t mode) {
       else {
         if(S_ISDIR(node->st_mode)) {
           if(!dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
+            free_blks[blk]=1;
             free(node);
             free(parent);
             return -errno;
@@ -111,6 +112,10 @@ static int inode_entry(const char *path, mode_t mode) {
             node->st_blocks=1;
             parent->st_nlink++;
           }
+        }
+        else {
+          node->direct_blk[0]=blk;
+          node->st_blocks=1;
         }
         memcpy(fs[(node->st_id)*INODE_SIZE], node, INODE_SIZE);
         memcpy(fs[(parent->st_id)*INODE_SIZE], parent, INODE_SIZE);
@@ -222,37 +227,51 @@ static int fs_unlink(const char *path) {
 }
 
 static int fs_rmdir(const char *path) {
-  char *dirpath, *name;
-  struct myinode *dir, *node;
+  char *parent_path, *name;
+  struct myinode *parent, *child;
 
-  if(!getnodebypath(path, root, &node)) {
+  if(!getnodebypath(path, root, child)) {
     return -errno;
   }
 
-  dirpath = get_dirname(path);
+  parent_path = get_dirname(path);
 
-  if(!getnodebypath(dirpath, root, &dir)) {
-    free(dirpath);
+  if(!getnodebypath(parent_path, root, parent)) {
+    free(parent_path);
     return -errno;
   }
-  free(dirpath);
+  free(parent_path);
 
   name = get_basename(path);
 
-  if(!dir_remove(dir, name)) {
+  if(!dir_remove(parent, child, name)) {
     free(name);
     return -errno;
   }
   free(name);
 
-  free(node);
+  free(parent);
+  free(child);
+
+  return 0;
+}
+
+static int fs_creat(const char *path, mode_t mode, struct fuse_file_info *fi) {
+
+  struct myinode *node;
+  if(!getnodebypath(path, root, node)) {
+    return -errno;
+  }
+
+  int res = inode_entry(path, mode);
+  if(res) return res;
 
   return 0;
 }
 
 static int fs_open(const char *path, struct fuse_file_info *fi) {
   struct myinode *node;
-  if(!getnodebypath(path, root, &node)) {
+  if(!getnodebypath(path, root, node)) {
     return -errno;
   }
 
@@ -322,6 +341,7 @@ static struct fuse_operations fs_oper = {
   .mkdir        = fs_mkdir,
   .unlink       = fs_unlink,
   .rmdir        = fs_rmdir,
+  .create        = fs_creat,
   .open         = fs_open,
   .read         = fs_read,
   .write        = fs_write

@@ -63,6 +63,11 @@ struct mydirent {
     char extra[20];
 };
 
+struct filehandle {
+  struct myinode *node;
+  int o_flags;
+};
+
 int free_blks[100];
 
 #endif
