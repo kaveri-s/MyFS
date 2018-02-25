@@ -68,7 +68,7 @@ static int inode_entry(const char *path, mode_t mode) {
   //Check for free blocks
   int blk = 0;
   for(int b=3;b<BLOCK_NO; b++) {
-    if(free_blks[b]==0)
+    if(fs[BLOCKSIZE+b]==0)
       blk = b;
   }
 
@@ -102,7 +102,7 @@ static int inode_entry(const char *path, mode_t mode) {
       else {
         if(S_ISDIR(node->st_mode)) {
           if(!dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
-            free_blks[blk]=1;
+            fs[BLOCKSIZE+blk]=1;
             free(node);
             free(parent);
             return -errno;
@@ -114,6 +114,7 @@ static int inode_entry(const char *path, mode_t mode) {
           }
         }
         else {
+          fs[BLOCKSIZE+blk]=1;
           node->direct_blk[0]=blk;
           node->st_blocks=1;
         }

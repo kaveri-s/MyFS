@@ -68,8 +68,6 @@ struct filehandle {
   int o_flags;
 };
 
-int free_blks[100];
-
 #endif
 
 int read_inode() {
@@ -115,8 +113,9 @@ static void init_fs() {
 
     printf("\nInitialised rest of the inodes");
 
-    free_blks[0]=1; //occupied by inode list
-    free_blks[1]=1; //occupied by free block list
+    fs[BLOCKSIZE]=1; //occupied by inode list
+    fs[BLOCKSIZE+1]=1; //occupied by free block list
+    fs[BLOCKSIZE+2]=1; //occupied by root
 
     printf("\nInitialised free block list");
 }
@@ -125,7 +124,6 @@ void main(){
     printf("Size of myinode: %d", sizeof(struct myinode));
     printf("\nSize of mydirent: %d", sizeof(struct mydirent));
     printf("\nNo. of inodes: %f", 4000.0/sizeof(struct myinode));
-    printf("\nSize of free block list: %d", sizeof(free_blks));
     printf("\nIt only prints");
 
     root = (struct myinode *)malloc(sizeof(struct myinode));
