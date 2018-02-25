@@ -97,16 +97,20 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
 int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
   struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
 
-  struct mydirent *cdir = (struct mydirent *) fs[child->direct_blk[0]];
+  if(S_ISDIR(child->st_mode)) {
+    struct mydirent *cdir = (struct mydirent *) fs[child->direct_blk[0]];
 
-  for(int i=2;i<SUB_NO;i++) { //check if directory is empty
-    if(cdir->sub_id!=-1) {
-      errno = ENOTEMPTY;
-      return 0;
+    for(int i=2; i<SUB_NO; i++) { //check if directory is empty
+      if(cdir->sub_id!=-1) {
+        errno = ENOTEMPTY;
+        return 0;
+      }
     }
   }
 
-  memset(cdir, 0, BLOCKSIZE); //clear the child's directory entry
+  for(int i=0; i<child->st_blocks; i++) {
+    memset(fs[child->direct_blk[i]], 0, BLOCKSIZE); //clear the child's directory entry/file contents
+  }
 
   for(int i=2;i<SUB_NO;i++) { //reset child's name and inode id in the parent dirent
     if(strcmp(name, pdir->subs[i])==0) {

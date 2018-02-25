@@ -189,41 +189,34 @@ static int fs_mknod(const char *path, mode_t mode, dev_t rdev) {
 
 static int fs_mkdir(const char *path, mode_t mode) {
   struct myinode *node;
-  int res = inode_entry(path, S_IFDIR | mode, &node);
+  int res = inode_entry(path, S_IFDIR | mode);
   if(res) return res;
-
-  node->data = NULL;
 
   return 0;
 }
 
 static int fs_unlink(const char *path) {
-  char *dirpath, *name;
-  struct myinode *dir, *node;
+  char *parent_path, *name;
+  struct myinode *parent, *child;
 
-  if(!getnodebypath(path, root, &node)) {
+  if(!getnodebypath(path, root, child)) {
     return -errno;
   }
 
-  dirpath = get_dirname(path);
-  if(!getnodebypath(dirpath, root, &dir)) {
-    free(dirpath);
+  parent_path = get_dirname(path);
+  if(!getnodebypath(parent_path, root, parent)) {
+    free(parent_path);
     return -errno;
   }
-  free(dirpath);
+  free(parent_path);
 
   name = get_basename(path);
 
-  if(!dir_remove(dir, name)) {
+  if(!dir_remove(parent, child, name)) {
     free(name);
     return -errno;
   }
   free(name);
-
-  if(node->st_nlink == 0) {
-    if(node->data) free(node->data);
-    free(node);
-  }
 
   return 0;
 }
