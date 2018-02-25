@@ -47,7 +47,7 @@ int getnodebypath(const char *path, struct myinode *parent, struct myinode *chil
 
 
 //Directory Functions
-int dir_add(ino_t pi_id, ino_t ci_id, struct mydirent *cdir, char *name) {
+int dir_add(ino_t pi_id, ino_t ci_id, int blk, char *name) {
   
   struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
 
@@ -65,7 +65,7 @@ int dir_add(ino_t pi_id, ino_t ci_id, struct mydirent *cdir, char *name) {
     dir->sub_id[i] = -1;
   }
 
-  memcpy(cdir, dir, BLOCKSIZE);
+  memcpy(fs[blk*BLOCKSIZE], dir, BLOCKSIZE);
   free(dir);
 
   return 1;
@@ -97,7 +97,7 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
 int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
   struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
 
-  struct mydirent *cdir = (struct mydirent *)fs[child->direct_blk[0]];
+  struct mydirent *cdir = (struct mydirent *) fs[child->direct_blk[0]];
 
   for(int i=2;i<SUB_NO;i++) { //check if directory is empty
     if(cdir->sub_id!=-1) {
