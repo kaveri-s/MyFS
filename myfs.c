@@ -299,11 +299,13 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 
   int bblk = (int)offset/BLOCKSIZE;
   int eblk = (int)(offset+size)/BLOCKSIZE;
+  int end=0;
 
   for(int i=bblk; i<=eblk; i++) {
     int roff = (i==bblk)?offset-bblk*BLOCKSIZE:0;
     int rsize = (i==eblk)?((i+1)*BLOCKSIZE-(offset+size)):BLOCKSIZE;
-    memcpy(buf, fh->node->direct_blk[i] + roff, rsize);
+    memcpy(buf+end, fh->node->direct_blk[i] + roff, rsize);
+    end=rsize;
   }
   set_time(fh->node, AT);
 
@@ -324,7 +326,7 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
 
   if(node->st_blocks < req_blocks) {
     void *newdata = malloc(req_blocks * BLOCKSIZE);
-    if(node->data != NULL) {      
+    if(node->data != NULL) {     
       memcpy(newdata, node->data, node->st_size);
       free(node->data);
     }
