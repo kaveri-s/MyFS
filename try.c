@@ -78,10 +78,11 @@ int read_inode() {
 }
 
 int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode){
-    printf("Made it here!!");
+    // printf("Made it here!!");
     root->st_mode=mode;
     root->st_id=st_id;
     root->type=type;
+    root->st_size=BLOCKSIZE;
     root->st_blocks=1;
     root->direct_blk[0]=blk;
     memcpy((char *)fs, root, INODE_SIZE);
@@ -107,17 +108,19 @@ static void init_fs() {
     for(int i=1; i<INODE_NO; i++) {
         ino->st_id=i;
         ino->type=FREE;
+        ino->st_size=0;
+        ino->st_mode=0755;
         ino->st_blocks=0;
         memcpy(fs+(i*INODE_SIZE), ino, INODE_SIZE);
     }
 
-    printf("\nInitialised rest of the inodes");
+    // printf("\nInitialised rest of the inodes");
 
     fs[BLOCKSIZE]=1; //occupied by inode list
     fs[BLOCKSIZE+1]=1; //occupied by free block list
     fs[BLOCKSIZE+2]=1; //occupied by root
 
-    printf("\nInitialised free block list");
+    // printf("\nInitialised free block list");
 }
 
 void main(){

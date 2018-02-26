@@ -83,9 +83,7 @@ static int inode_entry(const char *path, mode_t mode) {
     if(node->type==FREE) {
       node->st_uid = getuid();
       node->st_gid = getgid();
-      node->type = ORDINARY;
       node->st_blocks = 0;
-
 
       if(!initstat(node, mode)) {
         free(node);
@@ -102,6 +100,8 @@ static int inode_entry(const char *path, mode_t mode) {
       else {
         if(S_ISDIR(node->st_mode)) {
           if(!dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
+            node->st_size=BLOCKSIZE;
+            node->type = DIRECTORY;
             fs[BLOCKSIZE+blk]=1;
             free(node);
             free(parent);
@@ -114,10 +114,13 @@ static int inode_entry(const char *path, mode_t mode) {
           }
         }
         else {
+          node->type = ORDINARY;
           fs[BLOCKSIZE+blk]=1;
           node->direct_blk[0]=blk;
           node->st_blocks=1;
         }
+        set_time(node, AT|CT|MT);
+        set_time(parent, AT|MT);
         memcpy(fs[(node->st_id)*INODE_SIZE], node, INODE_SIZE);
         memcpy(fs[(parent->st_id)*INODE_SIZE], parent, INODE_SIZE);
         free(node);
@@ -259,11 +262,6 @@ static int fs_rmdir(const char *path) {
 
 static int fs_creat(const char *path, mode_t mode, struct fuse_file_info *fi) {
 
-  struct myinode *node;
-  if(!getnodebypath(path, root, node)) {
-    return -errno;
-  }
-
   int res = inode_entry(path, mode);
   if(res) return res;
 
@@ -299,8 +297,14 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
   size_t avail = filesize - offset;
   size_t n = (size < avail) ? size : avail;
 
-  memcpy(buf, fh->node->data + offset, n);
+  int bblk = (int)offset/BLOCKSIZE;
+  int eblk = (int)(offset+size)/BLOCKSIZE;
 
+  for(int i=bblk; i<=eblk; i++) {
+    int roff = (i==bblk)?offset-bblk*BLOCKSIZE:0;
+    int rsize = (i==eblk)?((i+1)*BLOCKSIZE-(offset+size)):BLOCKSIZE;
+    memcpy(buf, fh->node->direct_blk[i] + roff, rsize);
+  }
   set_time(fh->node, AT);
 
   return n;
@@ -312,6 +316,11 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
   struct myinode *node = fh->node;
 
   blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
+
+  if((req_blocks+node->st_blocks)>3) {
+    errno = EFBIG;
+    return -errno;
+  }
 
   if(node->st_blocks < req_blocks) {
     void *newdata = malloc(req_blocks * BLOCKSIZE);
