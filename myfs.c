@@ -303,7 +303,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 
   for(int i=bblk; i<=eblk; i++) {
     int roff = (i==bblk)?offset-bblk*BLOCKSIZE:0;
-    int rsize = (i==eblk)?((i+1)*BLOCKSIZE-(offset+size)):BLOCKSIZE;
+    int rsize = (i==eblk)?((offset+size)-eblk*BLOCKSIZE):BLOCKSIZE;
     memcpy(buf+end, fh->node->direct_blk[i] + roff, rsize);
     end=rsize;
   }
@@ -313,6 +313,7 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 }
 
 static int fs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+
   struct filehandle *fh = (struct filehandle *) fi->fh;
 
   struct myinode *node = fh->node;
@@ -325,16 +326,38 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
   }
 
   if(node->st_blocks < req_blocks) {
-    void *newdata = malloc(req_blocks * BLOCKSIZE);
-    if(node->data != NULL) {     
-      memcpy(newdata, node->data, node->st_size);
-      free(node->data);
+
+    blkcnt_t extra = req_blocks - node->st_blocks;
+    int blks[extra];
+    for(int i=0; i<extra; i++){
+      int blk=0;
+      for(int b=3;b<BLOCK_NO; b++) {
+        if(fs[BLOCKSIZE+b]==0)
+          blk = b;
+      }
+      if(blk == 0){
+        errno = ENOMEM;
+        return -errno;
+      }
+      blks[i]=blk;
     }
-    node->data = newdata;
-    node->st_blocks = req_blocks;
+    for(int i=0;i<extra;i++) {
+      node->direct_blk[node->st_blocks+i]=blks[i];
+    }
+    node->st_blocks+=extra;
   }
 
-  memcpy(((char *) node->data) + offset, buf, size);
+
+  int bblk = (int)offset/BLOCKSIZE;
+  int eblk = (int)(offset+size)/BLOCKSIZE;
+  int end=0;
+
+  for(int i=bblk; i<=eblk; i++) {
+    int roff = (i==bblk)?offset-bblk*BLOCKSIZE:0;
+    int rsize = (i==eblk)?((offset+size)-eblk*BLOCKSIZE):BLOCKSIZE;
+    memcpy(node->direct_blk[i] + roff, buf+end, rsize);
+    end=rsize;
+  }
 
   off_t minsize = offset + size;
   if(minsize > node->st_size) {
