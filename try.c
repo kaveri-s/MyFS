@@ -1,12 +1,20 @@
 #include "try.h"
 
 
-// int read_inode() {
-//     struct myinode *ino = (struct myinode *)malloc(sizeof(struct myinode));
-//     memcpy(ino, fs, INODE_SIZE);
-//     printf("\nInode info: %d", ino->direct_blk[0]);
+int read_inode() {
+    struct myinode *ino = (struct myinode *)malloc(sizeof(struct myinode));
+    memcpy(ino, fs, INODE_SIZE);
+    printf("\nInode info: %d", ino->direct_blk[0]);
 
-// }
+}
+
+int rootdir() {
+    struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
+    memcpy(dir, fs+2*BLOCKSIZE, BLOCKSIZE);
+    printf("Name %s", dir->name);
+    printf("Entry: %s", dir->subs[0]);
+    printf("Inode number: %s", dir->sub_id[0]);
+}
 
 void openfile() {
     const char *filepath = "/home/kaveri/Desktop/myfs";
@@ -19,7 +27,7 @@ void openfile() {
 
     // Stretch the file size to the size of the (mmapped) array of char
 
-    size_t fssize = BLOCK_NO*BLOCKSIZE; // + \0 null character
+    size_t fssize = BLOCK_NO*BLOCKSIZE+1; // + \0 null character
 
     int result = lseek(fd, fssize-1, SEEK_SET);
     if (result == -1) {
@@ -35,19 +43,19 @@ void openfile() {
 	    exit(EXIT_FAILURE);
     }
 
-    fs = mmap(0, fssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    fs = (char *)mmap(0, fssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (fs == MAP_FAILED) {
 	    close(fd);
 	    perror("Error mmapping the file");
 	    exit(EXIT_FAILURE);
     }
-
+    printf("fs created");
 }
 
 void testfs() {
     printf("\nFS contents: \n");
-    for(int i=0;i<BLOCK_NO*BLOCKSIZE;i++) {
-        printf("%c", fs[i]);
+    for(int i=BLOCKSIZE;i<BLOCKSIZE+INODE_SIZE;i++) {
+        printf("*%c*", fs[i]);
     }
     printf("\n");
 }
@@ -101,15 +109,19 @@ int init_fs() {
     return 1;
 }
 
-// void main(){
-//     printf("Size of myinode: %d", sizeof(struct myinode));
-//     printf("\nSize of mydirent: %d", sizeof(struct mydirent));
-//     printf("\nNo. of inodes: %f", 4000.0/sizeof(struct myinode));
-//     printf("\nIt only prints");
+void main(){
+    printf("Size of myinode: %d", sizeof(struct myinode));
+    printf("\nSize of mydirent: %d", sizeof(struct mydirent));
+    printf("\nNo. of inodes: %f", 4000.0/sizeof(struct myinode));
+    printf("\nIt only prints");
 
-//     root = (struct myinode *)malloc(sizeof(struct myinode));
-//     // printf("Made it here");
-//     init_fs(root);
-//     read_inode();
-//     free(root);
-// }
+    openfile();
+
+    root = (struct myinode *)malloc(sizeof(struct myinode));
+    // printf("Made it here");
+    init_fs(root);
+    read_inode();
+    // testfs();
+    rootdir();
+    free(root);
+}
