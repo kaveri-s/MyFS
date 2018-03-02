@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "try.c"
+#include "mydef.h"
+#include "try.h"
 
 // Node Functions
 
@@ -28,7 +29,7 @@ int getnodebypath(const char *path, struct myinode *parent, struct myinode *chil
   }
 
   // Search directory
-  struct myinode *node;
+  struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
   if(!dir_find(parent, name, len, node)) {
     errno = ENOENT;
     return 0;
@@ -65,7 +66,7 @@ int dir_add(ino_t pi_id, ino_t ci_id, int blk, char *name) {
     dir->sub_id[i] = -1;
   }
 
-  memcpy(fs[blk*BLOCKSIZE], dir, BLOCKSIZE);
+  memcpy(fs+blk*BLOCKSIZE, dir, BLOCKSIZE);
   free(dir);
 
   return 1;
@@ -73,9 +74,9 @@ int dir_add(ino_t pi_id, ino_t ci_id, int blk, char *name) {
 
 int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *child) {
   
-  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
+  struct mydirent *pdir = (struct mydirent *) fs+parent->direct_blk[0]*BLOCKSIZE;
 
-  if(len(name)>MAX_NAME_LEN) {
+  if(strlen(name)>MAX_NAME_LEN) {
     errno = ENAMETOOLONG;
     return 0;
   }
@@ -95,13 +96,13 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
 }
 
 int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
-  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]];
+  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]);
 
   if(S_ISDIR(child->st_mode)) {
-    struct mydirent *cdir = (struct mydirent *) fs[child->direct_blk[0]];
+    struct mydirent *cdir = (struct mydirent *) (fs+child->direct_blk[0]);
 
     for(int i=2; i<SUB_NO; i++) { //check if directory is empty
-      if(cdir->sub_id!=-1) {
+      if(cdir->sub_id[i]!=-1) {
         errno = ENOTEMPTY;
         return 0;
       }
@@ -109,7 +110,7 @@ int dir_remove(struct myinode *parent, struct myinode *child, const char *name) 
   }
 
   for(int i=0; i<child->st_blocks; i++) {
-    memset(fs[child->direct_blk[i]], 0, BLOCKSIZE); //clear the child's directory entry/file contents
+    memset(fs+child->direct_blk[i]*BLOCKSIZE, 0, BLOCKSIZE); //clear the child's directory entry/file contents
   }
 
   for(int i=2;i<SUB_NO;i++) { //reset child's name and inode id in the parent dirent
@@ -126,14 +127,14 @@ int dir_remove(struct myinode *parent, struct myinode *child, const char *name) 
 }
 
 int dir_find(struct myinode *parent, const char *name, int namelen, struct myinode *child) {
-  struct mydirent *pdir = (struct mydirent *) fs[parent->direct_blk[0]]; //get dirent of parent
+  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]); //get dirent of parent
 
   for(int i=2;i<59;i++) { //search all subs from 2 (0 and 1 are for . and ..)
     if(pdir->sub_id[i]!=-1) { //if it maps to a valid inode
-      if(len(pdir->subs[i])==namelen) { //if the length of the sub_name matches namelen
+      if(strlen(pdir->subs[i])==namelen) { //if the length of the sub_name matches namelen
         if(strncmp(pdir->subs[i], name, namelen)==0) { //if sub_name matches name
           int idchild = pdir->sub_id[i]; //get inode_id at that index
-          memcpy(child, fs[idchild*INODE_SIZE], INODE_SIZE); //retrieve child's inode information from fs
+          memcpy(child, fs+idchild*INODE_SIZE, INODE_SIZE); //retrieve child's inode information from fs
           return 1;
         }
       }
