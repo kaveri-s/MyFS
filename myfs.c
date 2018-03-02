@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <mcheck.h>
 
 // #include "mydef.h"
 
@@ -323,7 +324,7 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
 
   blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
 
-  if((req_blocks+node->st_blocks)>3) {
+  if(req_blocks>3) {
     errno = EFBIG;
     return -errno;
   }
@@ -395,8 +396,8 @@ static struct fuse_operations fs_oper = {
 //
 
 int main(int argc, char *argv[]) {
-
-  openfile();
+  mtrace();
+  // openfile();
 
   // Initialize root directory
   root = (struct myinode *)malloc(sizeof(struct myinode));
