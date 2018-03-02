@@ -33,7 +33,9 @@ typedef enum {
 } file_type;
 
 //Stores fs info
-void *fs = malloc(BLOCK_NO*BLOCKSIZE);
+void *fs;
+
+
 
 //Allocating max 3 blocks for a file
 struct myinode {   

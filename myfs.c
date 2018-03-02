@@ -48,6 +48,8 @@ static int initstat(struct myinode *node, mode_t mode) {
 }
 
 static int inode_entry(const char *path, mode_t mode) {
+
+  const int full=1, empty=0;
   
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
   
@@ -69,8 +71,10 @@ static int inode_entry(const char *path, mode_t mode) {
   //Check for free blocks
   int blk = 0;
   for(int b=3;b<BLOCK_NO; b++) {
-    if(fs[BLOCKSIZE+b]==0)
+    int *x;
+    if(memcmp(fs+BLOCKSIZE+b, &empty, sizeof(int))==0) {
       blk = b;
+    }
   }
 
   if(blk == 0){
@@ -103,7 +107,7 @@ static int inode_entry(const char *path, mode_t mode) {
           if(!dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
             node->st_size=BLOCKSIZE;
             node->type = DIRECTORY;
-            fs[BLOCKSIZE+blk]=1;
+            memcpy(fs+BLOCKSIZE+blk, &full, sizeof(int));
             free(node);
             free(parent);
             return -errno;
@@ -116,7 +120,7 @@ static int inode_entry(const char *path, mode_t mode) {
         }
         else {
           node->type = ORDINARY;
-          fs[BLOCKSIZE+blk]=1;
+          memcpy(fs+BLOCKSIZE+blk, &full, sizeof(int));
           node->direct_blk[0]=blk;
           node->st_blocks=1;
         }
@@ -318,6 +322,8 @@ static int fs_read(const char *path, char *buf, size_t size, off_t offset, struc
 
 static int fs_write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
 
+  const int full=1, empty=0;
+
   struct filehandle *fh = (struct filehandle *) fi->fh;
 
   struct myinode *node = fh->node;
@@ -336,7 +342,7 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
     for(int i=0; i<extra; i++){
       int blk=0;
       for(int b=3;b<BLOCK_NO; b++) {
-        if(fs[BLOCKSIZE+b]==0)
+        if(memcmp(fs+BLOCKSIZE+b, &empty, sizeof(int))==0)
           blk = b;
       }
       if(blk == 0){
@@ -347,6 +353,7 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
     }
     for(int i=0;i<extra;i++) {
       node->direct_blk[node->st_blocks+i]=blks[i];
+      memcpy(fs+blks[i]*BLOCKSIZE, &full, sizeof(int));
     }
     node->st_blocks+=extra;
   }
@@ -403,8 +410,8 @@ int main(int argc, char *argv[]) {
   root = (struct myinode *)malloc(sizeof(struct myinode));
 
   init_fs();
-  root->st_uid = getuid();
-  root->st_gid = getgid();
+  // root->st_uid = getuid();
+  // root->st_gid = getgid();
 
   // No entries
   umask(0);
