@@ -72,7 +72,10 @@ struct filehandle {
 
 
 void openfile();
-void testfs();
+int read_inode(ino_t);
+int read_dirent(int);
+int read_file(struct myinode *);
+int free_blocks();
 int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode);
 int make_rootdir(char* name);
 int init_fs();

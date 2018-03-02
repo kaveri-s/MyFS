@@ -1,128 +1,154 @@
 = Start
-@ ./myfs:[0x401e9b] + 0x1fd9450 0x58
-@ ./myfs:[0x402732] + 0x1fd94b0 0x1000
-@ /lib/x86_64-linux-gnu/libc.so.6:(_IO_file_doallocate+0x55)[0x7fd25dcb11d5] + 0x1fda4c0 0x400
-@ ./myfs:[0x4027e3] + 0x1fda8d0 0x58
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda930 0x7
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] + 0x1fda950 0x10
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda970 0x14
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fda990 0x28
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025fc7] - 0x1fda970
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda970 0xd
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fda990
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fda990 0x2d
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025fc7] - 0x1fda970
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fda9d0 0x46
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda970 0x3
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] < 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] > 0x1fda950 0x18
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdaa20 0x21
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] < 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] > 0x1fdaa50 0x20
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_parse+0x193)[0x7fd25e0262c3] - 0x1fda990
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_parse_cmdline+0xf9)[0x7fd25e027f29] + 0x1fdaa80 0x44
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda950 0xf
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] < 0x1fdaa50
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] > 0x1fdaa50 0x28
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_parse_cmdline+0x137)[0x7fd25e027f67] - 0x1fdaa80
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdaad0 0x7
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] + 0x1fdaaf0 0x10
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdab10 0x21
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fdab40 0x28
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fdab70 0x1a
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025fc7] - 0x1fdab10
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdaba0 0xd
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdabc0 0x5
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fdab10 0x1a
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025fc7] - 0x1fdaba0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fda970
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fdaa20
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7fd25e025a5d] - 0x1fdaa50
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fda950 0x6
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fda950 0x10
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fda950 0x15
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fda950
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fda990 0x37
-@ /lib/x86_64-linux-gnu/libc.so.6:(opendir+0x7a)[0x7fd25dd0c1ba] + 0x1fdabe0 0x8030
-@ /lib/x86_64-linux-gnu/libc.so.6:(closedir+0xd)[0x7fd25dd0c3cd] - 0x1fdabe0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fda990
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fda930 0x3d
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0259dc] + 0x1fdaa20 0x62
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] < 0x1fdaa20
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e025951] > 0x1fdaa20 0x4a
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02c35a] - 0x1fdaa20
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02bfba] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02bfce] - 0x1fdabc0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02bfd8] - 0x1fdab70
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02bfe2] - 0x1fdab10
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e02bfec] - 0x1fdab40
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e026426] + 0x1fdabe0 0x40
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e01eae9] + 0x1fdac30 0x158
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_fs_new+0x25)[0x7fd25e01e6b5] + 0x1fdad90 0x180
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdabc0 0x7
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] + 0x1fdaba0 0x10
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fdaad0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7fd25e025a5d] - 0x1fdaaf0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e024f1f] + 0x1fdaf20 0x378
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fdaaf0 0x7
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7fd25e025ac0] + 0x1fdaad0 0x10
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fdabc0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7fd25e025a5d] - 0x1fdaba0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_session_new+0x1b)[0x7fd25e0264ab] + 0x1fdb2a0 0x48
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e01ed29] + 0x1fdb2f0 0x10000
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e01ed5d] + 0x1feb300 0x10000
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7fd25e025a50] - 0x1fdaaf0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7fd25e025a5d] - 0x1fdaad0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_session_loop+0x3e)[0x7fd25e01f9be] + 0x7fd25e3c2010 0x21000
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e0170bf] + 0x1fdaa20 0x30
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1fdaa60 0x100
-@ ./myfs:[0x40138a] + 0x1fdab70 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018805] - 0x1fdaa60
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1fdaa60 0x100
-@ ./myfs:[0x40138a] + 0x1ffb310 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018805] - 0x1fdaa60
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1fdaa60 0x100
-@ ./myfs:[0x40138a] + 0x1ffb370 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018805] - 0x1fdaa60
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1fdaa60 0x100
-@ ./myfs:[0x40138a] + 0x1ffb3d0 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018805] - 0x1fdaa60
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1fdaa60 0x100
-@ ./myfs:[0x40138a] + 0x1ffb430 0x58
-@ ./myfs:[0x401fac] + 0x1ffb490 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018493] - 0x1fdaa60
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_reply_err+0x32)[0x7fd25e021942] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fda930 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e01afe4] + 0x1fdaa60 0x70
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1ffb4f0 0x100
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e021799] - 0x1fda930
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e01b09c] - 0x1ffb4f0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fdaae0 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1ffb4f0 0x100
-@ ./myfs:[0x40138a] + 0x1fda930 0x58
-@ ./myfs:[0x401fac] + 0x1ffb600 0x58
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e018493] - 0x1ffb4f0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_reply_err+0x32)[0x7fd25e021942] - 0x1fdaae0
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e020a28] + 0x1fdaae0 0x80
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e016244] + 0x1ffb4f0 0x100
-@ ./myfs:[0x4013f7] + 0x1ffb660 0x58
-@ ./myfs:[0x401431] + 0x1ffb6c0 0x90
-@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7fd25e015627] + 0x1ffb760 0x400
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda990 0x2
-@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7fd25dccf48a] + 0x1fda9b0 0x2
-@ ./myfs:[0x4024bf] - 0x1fd
+@ ./myfs:[0x401f59] + 0x7f19739cb010 0x64000
+@ ./myfs:[0x401f6a] + 0x259f450 0x58
+@ ./myfs:[0x402ba8] + 0x259f4b0 0x1000
+@ /lib/x86_64-linux-gnu/libc.so.6:(_IO_file_doallocate+0x55)[0x7f19732991d5] + 0x25a04c0 0x400
+@ ./myfs:[0x402c95] + 0x25a08d0 0x58
+@ ./myfs:[0x402625] + 0x25a0930 0x58
+@ ./myfs:[0x402793] - 0x25a0930
+@ ./myfs:[0x4027af] + 0x25a0930 0x1000
+@ ./myfs:[0x40285d] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0930 0x7
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] + 0x25a0950 0x10
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0970 0x14
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0990 0x28
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360dfc7] - 0x25a0970
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0970 0xd
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0990
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0990 0x2d
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360dfc7] - 0x25a0970
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a09d0 0x46
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0970 0x3
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] < 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] > 0x25a0950 0x18
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0a20 0x21
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] < 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] > 0x25a0a50 0x20
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_parse+0x193)[0x7f197360e2c3] - 0x25a0990
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_parse_cmdline+0xf9)[0x7f197360ff29] + 0x25a0a80 0x44
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0950 0xf
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] < 0x25a0a50
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] > 0x25a0a50 0x28
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_parse_cmdline+0x137)[0x7f197360ff67] - 0x25a0a80
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0ad0 0x7
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] + 0x25a0af0 0x10
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0b10 0x21
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0b40 0x28
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0b70 0x1a
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360dfc7] - 0x25a0b10
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0ba0 0xd
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0bc0 0x5
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0b10 0x1a
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360dfc7] - 0x25a0ba0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0970
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0a20
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7f197360da5d] - 0x25a0a50
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0950 0x6
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0950 0x10
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0950 0x15
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0950
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0990 0x37
+@ /lib/x86_64-linux-gnu/libc.so.6:(opendir+0x7a)[0x7f19732f41ba] + 0x25a0be0 0x8030
+@ /lib/x86_64-linux-gnu/libc.so.6:(closedir+0xd)[0x7f19732f43cd] - 0x25a0be0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0990
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0930 0x3d
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0a20 0x62
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0a20
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0a20 0x4a
+@ /lib/x86_64-linux-gnu/libc.so.6:[0x7f1973265a19] + 0x25a0be0 0x2b0
+@ /lib/x86_64-linux-gnu/libc.so.6:[0x7f1973265b69] + 0x25a0ba0 0xf
+@ /lib/x86_64-linux-gnu/libc.so.6:(ts/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0990
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0930 0x3d
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d9dc] + 0x25a0a20 0x62
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] < 0x25a0a20
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360d951] > 0x25a0a20 0x4a
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197361435a] - 0x25a0a20
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973613fba] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973613fce] - 0x25a0bc0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973613fd8] - 0x25a0b70
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973613fe2] - 0x25a0b10
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973613fec] - 0x25a0b40
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360e426] + 0x25a0be0 0x40
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973606ae9] + 0x25a0c30 0x158
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_fs_new+0x25)[0x7f19736066b5] + 0x25a0d90 0x180
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0bc0 0x7
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] + 0x25a0ba0 0x10
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0ad0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7f197360da5d] - 0x25a0af0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360cf1f] + 0x25a0f20 0x378
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0af0 0x7
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_add_arg+0x40)[0x7f197360dac0] + 0x25a0ad0 0x10
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0bc0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7f197360da5d] - 0x25a0ba0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_session_new+0x1b)[0x7f197360e4ab] + 0x25a12a0 0x48
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973606d29] + 0x25a12f0 0x10000
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973606d5d] + 0x25b1300 0x10000
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x40)[0x7f197360da50] - 0x25a0af0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_opt_free_args+0x4d)[0x7f197360da5d] - 0x25a0ad0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_session_loop+0x3e)[0x7f19736079be] + 0x7f19739a9010 0x21000
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735ff0bf] + 0x25a0a20 0x30
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25a0a60 0x100
+@ ./myfs:[0x4013e6] + 0x25a0b70 0x58
+@ ./myfs:[0x402625] + 0x25c1310 0x58
+@ ./myfs:[0x402793] - 0x25c1310
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973600805] - 0x25a0a60
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25a0a60 0x100
+@ ./myfs:[0x4013e6] + 0x25c1310 0x58
+@ ./myfs:[0x402625] + 0x25c1370 0x58
+@ ./myfs:[0x402793] - 0x25c1370
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973600805] - 0x25a0a60
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25a0a60 0x100
+@ ./myfs:[0x4013e6] + 0x25c1370 0x58
+@ ./myfs:[0x402625] + 0x25c13d0 0x58
+@ ./myfs:[0x402793] - 0x25c13d0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973600805] - 0x25a0a60
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25a0a60 0x100
+@ ./myfs:[0x4013e6] + 0x25c13d0 0x58
+@ ./myfs:[0x402625] + 0x25c1430 0x58
+@ ./myfs:[0x402793] - 0x25c1430
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973600805] - 0x25a0a60
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0930 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973602fe4] + 0x25a0a60 0x70
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25c1490 0x100
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973609799] - 0x25a0930
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f197360309c] - 0x25c1490
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0ae0 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25c1430 0x100
+@ ./myfs:[0x4013e6] + 0x25a0930 0x58
+@ ./myfs:[0x4020a8] + 0x25c1540 0x58
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973600493] - 0x25c1430
+@ /lib/x86_64-linux-gnu/libfuse.so.2:(fuse_reply_err+0x32)[0x7f1973609942] - 0x25a0ae0
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f1973608a28] + 0x25a0ae0 0x80
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fe244] + 0x25c1430 0x100
+@ ./myfs:[0x401462] + 0x25c15a0 0x58
+@ ./myfs:[0x402625] + 0x25c1600 0x58
+@ ./myfs:[0x402793] - 0x25c1600
+@ ./myfs:[0x4014ab] + 0x25c1660 0x90
+@ /lib/x86_64-linux-gnu/libfuse.so.2:[0x7f19735fd627] + 0x25c1700 0x400
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a0990 0x2
+@ /lib/x86_64-linux-gnu/libc.so.6:(__strdup+0x1a)[0x7f19732b748a] + 0x25a09b0 0x2
+@ ./myfs:[0x4025bb] - 0x25a0990
+@ ./myfs:[0x40151f] + 0x25c1600 0x58
+@ ./myfs:[0x402625] + 0x25c1b10 0x58
+@ ./myfs:[0x402793] - 0x25c1b10
+@ ./myfs:[0x401556] + 0x25c1b70 0x90
+@ ./myfs:[0x401579] - 0x25a09b0
+@ ./myfs:[0x4015db] + 0x25c1b10 0x58
+@ ./myfs:[0x401621] + 0x25c1c10 0x90
+@ ./myfs:[0x4015db] + 0x25c1cb0 0x58
+@ ./myfs:[0x401621] + 0x25c1d10 0x90
+@ ./myfs:[0x4015db] + 0x

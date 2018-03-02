@@ -1,4 +1,5 @@
 #include "try.h"
+#include<sys/time.h>
 
 
 int read_inode(ino_t i) {
@@ -16,10 +17,11 @@ int read_inode(ino_t i) {
     printf("\nBT: %d\n", ino->st_ctim);
     for(int i=0; i<ino->st_blocks;i++)
         printf("Block no %d mapped to: %d\n", i, ino->direct_blk[i]);
-
+    free(ino);
+    return 1;
 }
 
-int rootdir(int blk) {
+int read_dirent(int blk) {
     struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
     memcpy(dir, fs+blk*BLOCKSIZE, BLOCKSIZE);
     printf("Name %s\n", dir->name);
@@ -27,6 +29,27 @@ int rootdir(int blk) {
         printf("Entry: %s\t", dir->subs[i]);
         printf("Inode number: %d\n", dir->sub_id[i]);
     }
+    free(dir);
+    return 1;
+}
+
+int read_file(struct myinode *node) {
+    char data[BLOCKSIZE];
+    for(int i; i < node->st_blocks; i++) {
+        memcpy(data, fs+node->direct_blk[i]*BLOCKSIZE, BLOCKSIZE);
+        puts(data);
+    }
+    return 1;
+}
+
+int free_blocks() {
+    int blk;
+    printf("\nFree Block List: ");
+    for(int i=0; i<BLOCK_NO; i++) {
+        memcpy(&blk, fs+BLOCKSIZE+i*sizeof(int), sizeof(int));
+        printf("%d\t", blk);
+    }
+    return 1;
 }
 
 void openfile() {
@@ -65,17 +88,10 @@ void openfile() {
     printf("fs created");
 }
 
-// void testfs() {
-//     printf("\nFS contents: \n");
-//     for(int i=BLOCKSIZE;i<BLOCKSIZE+INODE_SIZE;i++) {
-//         printf("*%d*", fs[i]);
-//     }
-//     printf("\n");
-// }
-
 int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode){
     // printf("Made it here!!");
     root->st_mode=mode;
+    root->st_nlink=1;
     root->st_id=st_id;
     root->type=type;
     root->st_size=BLOCKSIZE;
@@ -91,7 +107,7 @@ int make_rootdir(char* name) {
     struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
     strcpy(dir->name, name);
     strcpy(dir->subs[0],".");
-    dir->sub_id[0]=root->direct_blk[0];
+    dir->sub_id[0]=root->st_id;
     for(int i=1; i<SUB_NO; i++)
         dir->sub_id[i]=-1;
     memcpy(fs+root->direct_blk[0]*BLOCKSIZE, dir, BLOCKSIZE);
@@ -102,7 +118,11 @@ int init_fs() {
     // printf("Made it here");
     make_rootnode(0, DIRECTORY, 2, S_IFDIR | 0755);
 
+    // read_inode(root->st_id);
+
     make_rootdir("/");
+
+    // read_dirent(root->direct_blk[0]);
 
     printf("Initialised Root");
 
@@ -121,27 +141,28 @@ int init_fs() {
     int occupied = 1;
 
     memcpy(fs+BLOCKSIZE, &occupied, sizeof(int)); //occupied by inode list
-    memcpy(fs+BLOCKSIZE+1, &occupied, sizeof(int)); //occupied by free block list
-    memcpy(fs+BLOCKSIZE+2, &occupied, sizeof(int)); //occupied by root
+    memcpy(fs+BLOCKSIZE+sizeof(int), &occupied, sizeof(int)); //occupied by free block list
+    memcpy(fs+BLOCKSIZE+2*sizeof(int), &occupied, sizeof(int)); //occupied by root
 
     // printf("\nInitialised free block list");
     return 1;
 }
 
-void main(){
-    printf("Size of myinode: %d", sizeof(struct myinode));
-    printf("\nSize of mydirent: %d", sizeof(struct mydirent));
-    printf("\nNo. of inodes: %f", 4000.0/sizeof(struct myinode));
-    printf("\nIt only prints");
+// void main(){
+//     printf("Size of myinode: %d", sizeof(struct myinode));
+//     printf("\nSize of mydirent: %d", sizeof(struct mydirent));
+//     printf("\nNo. of inodes: %f", 4000.0/sizeof(struct myinode));
+//     printf("\nIt only prints");
 
-    // openfile();
+//     // openfile();
 
-    fs = malloc(BLOCK_NO*BLOCKSIZE);
-    root = (struct myinode *)malloc(sizeof(struct myinode));
-    // printf("Made it here");
-    init_fs(root);
-    read_inode(0);
-    // testfs();
-    rootdir(2);
-    free(root);
-}
+//     fs = malloc(BLOCK_NO*BLOCKSIZE);
+//     root = (struct myinode *)malloc(sizeof(struct myinode));
+//     // printf("Made it here");
+//     init_fs();
+//     read_inode(0);
+//     // testfs();
+//     read_dirent(2);
+//     free_blocks();
+//     free(root);
+// }
