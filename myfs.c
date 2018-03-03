@@ -434,10 +434,10 @@ int main(int argc, char *argv[]) {
   init_fs();
 
   set_time(root, AT|CT|MT);
-  free_blocks();
-  read_inode(root->st_id);
-  read_dirent(root->direct_blk[0]);
-  printf("Done.");
+  // free_blocks();
+  // read_inode(root->st_id);
+  // read_dirent(root->direct_blk[0]);
+  // printf("Done.");
   // const char *path = "/hello";
   // printf("%d", fs_mkdir(path, S_IFDIR|0755));
   // root->st_uid = getuid();
