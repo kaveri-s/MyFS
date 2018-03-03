@@ -441,7 +441,7 @@ int main(int argc, char *argv[]) {
   // No entries
   umask(0);
 
-  // return fuse_main(argc, argv, &fs_oper, NULL);
+  return fuse_main(argc, argv, &fs_oper, NULL);
   
   // return 1;
 }
