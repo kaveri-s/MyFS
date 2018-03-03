@@ -31,10 +31,12 @@ static void set_stat(struct myinode *node, struct stat *stbuf) {
 }
 
 static void set_time(struct myinode *node, int param) {
+
   time_t now = time(0);
   if(param & AT) node->st_atim = now;
   if(param & CT) node->st_ctim = now;
   if(param & MT) node->st_mtim = now;
+
 }
 
 static int initstat(struct myinode *node, mode_t mode) {
@@ -197,8 +199,10 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
   for(int i=2; i<SUB_NO; i++) {
     if(entry->sub_id[i] != -1) {
       struct myinode *child = (struct myinode *)malloc(sizeof(struct myinode));
+      memset(child, 0, INODE_SIZE);
       memcpy(child, fs+(entry->sub_id[i])*INODE_SIZE, INODE_SIZE);
       struct stat *stbuf = (struct stat *)malloc(sizeof(struct stat));
+      memset(stbuf, 0, sizeof(struct stat));
       set_stat(child, stbuf);
       filler(buf, entry->subs[i], stbuf, 0);
     }

@@ -108,6 +108,7 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
 }
 
 int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
+  int empty=0;
   struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]*BLOCKSIZE);
 
   if(S_ISDIR(child->st_mode)) {
@@ -123,6 +124,7 @@ int dir_remove(struct myinode *parent, struct myinode *child, const char *name) 
 
   for(int i=0; i<child->st_blocks; i++) {
     memset(fs+child->direct_blk[i]*BLOCKSIZE, 0, BLOCKSIZE); //clear the child's directory entry/file contents
+    memcpy(fs+child->direct_blk[i]*sizeof(int), &empty, sizeof(int));
   }
 
   for(int i=2;i<SUB_NO;i++) { //reset child's name and inode id in the parent dirent
