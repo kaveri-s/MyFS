@@ -43,7 +43,7 @@ int read_file(struct myinode *node) {
 }
 
 int free_blocks() {
-    int blk;
+    int blk=-1;
     printf("\nFree Block List: ");
     for(int i=0; i<BLOCK_NO; i++) {
         memcpy(&blk, fs+BLOCKSIZE+i*sizeof(int), sizeof(int));
@@ -91,7 +91,7 @@ void openfile() {
 int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode){
     // printf("Made it here!!");
     root->st_mode=mode;
-    root->st_nlink=1;
+    root->st_nlink=2;
     root->st_id=st_id;
     root->type=type;
     root->st_size=BLOCKSIZE;
@@ -105,12 +105,16 @@ int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode){
 
 int make_rootdir(char* name) {
     struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
+    memset(dir, 0, BLOCKSIZE);
     strcpy(dir->name, name);
     strcpy(dir->subs[0],".");
     dir->sub_id[0]=root->st_id;
-    for(int i=1; i<SUB_NO; i++)
+    strcpy(dir->subs[1],"..");
+    dir->sub_id[1]=root->st_id;
+    for(int i=2; i<SUB_NO; i++)
         dir->sub_id[i]=-1;
     memcpy(fs+root->direct_blk[0]*BLOCKSIZE, dir, BLOCKSIZE);
+    free(dir);
     return 1;
 }
 
@@ -127,6 +131,7 @@ int init_fs() {
     printf("Initialised Root");
 
     struct myinode *ino = (struct myinode *)malloc(sizeof(struct myinode));
+    memset(ino, 0, INODE_SIZE);
     for(int i=1; i<INODE_NO; i++) {
         ino->st_id=i;
         ino->type=FREE;
@@ -144,6 +149,7 @@ int init_fs() {
     memcpy(fs+BLOCKSIZE+sizeof(int), &occupied, sizeof(int)); //occupied by free block list
     memcpy(fs+BLOCKSIZE+2*sizeof(int), &occupied, sizeof(int)); //occupied by root
 
+    free(ino);
     // printf("\nInitialised free block list");
     return 1;
 }

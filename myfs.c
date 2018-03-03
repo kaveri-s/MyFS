@@ -44,6 +44,7 @@ static int initstat(struct myinode *node, mode_t mode) {
   stbuf->st_mode  = mode;
   stbuf->st_nlink = 0;
   set_time(node, AT | MT | CT);
+  free(stbuf);
   return 1;
 }
 
@@ -55,6 +56,7 @@ static int inode_entry(const char *path, mode_t mode) {
   
   if(getnodebypath(path, root, node)) {
     errno = EEXIST;
+    free(node);
     return -errno;
   }
 
@@ -64,13 +66,15 @@ static int inode_entry(const char *path, mode_t mode) {
   struct myinode *parent = (struct myinode *)malloc(sizeof(struct myinode)); 
   if(!getnodebypath(dirpath, root, parent)) {
     free(dirpath);
+    free(parent);
+    free(node);
     return -errno;
   }
   free(dirpath);
 
   //Check for free blocks
   int blk = 0;
-  for(int b=3;b<BLOCK_NO; b++) {
+  for(int b=3; b<BLOCK_NO; b++) {
     if(memcmp(fs+BLOCKSIZE+b*sizeof(int), &empty, sizeof(int))==0) {
       blk = b;
     }
@@ -78,6 +82,8 @@ static int inode_entry(const char *path, mode_t mode) {
 
   if(blk == 0){
     errno = ENOMEM;
+    free(node);
+    free(parent);
     return -errno;
   }
 
@@ -91,8 +97,11 @@ static int inode_entry(const char *path, mode_t mode) {
 
       if(!initstat(node, mode)) {
         free(node);
+        free(parent);
         return -errno;
       }
+
+      read_inode(parent->st_id);
 
       // Add entry in parent directory
       if(!dir_add_alloc(parent, get_basename(path), node)) {
@@ -133,6 +142,9 @@ static int inode_entry(const char *path, mode_t mode) {
       }
     }
   }
+
+  free(node);
+  free(parent);
   
   return -ENOMEM;
 
@@ -169,7 +181,7 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
   filler(buf, ".",  cst, 0);
 
   if(current == root) {
-    filler(buf, "..", NULL, 0);
+    filler(buf, "..", cst, 0);
   } else {
     char *parent_path = get_dirname(path);
     struct myinode *parent = (struct myinode *)malloc(sizeof(struct myinode)); ;
@@ -181,7 +193,7 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
     filler(buf, "..", pst, 0);
   }
 
-  struct mydirent *entry = (struct mydirent *) (fs+current->direct_blk[0]);
+  struct mydirent *entry = (struct mydirent *) (fs+current->direct_blk[0]*BLOCKSIZE);
   for(int i=2; i<SUB_NO; i++) {
     if(entry->sub_id[i] != -1) {
       struct myinode *child = (struct myinode *)malloc(sizeof(struct myinode));
@@ -404,13 +416,15 @@ static struct fuse_operations fs_oper = {
 //
 
 int main(int argc, char *argv[]) {
-  mtrace();
+  // mtrace();
   // openfile();
 
   fs = malloc(BLOCK_NO*BLOCKSIZE);
+  memset(fs, 0, BLOCK_NO*BLOCKSIZE);
 
   // Initialize root directory
   root = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(root, 0, INODE_SIZE);
 
   init_fs();
 
@@ -419,12 +433,16 @@ int main(int argc, char *argv[]) {
   read_inode(root->st_id);
   read_dirent(root->direct_blk[0]);
   printf("Done.");
+  // const char *path = "/hello";
+  // printf("%d", fs_mkdir(path, S_IFDIR|0755));
   // root->st_uid = getuid();
   // root->st_gid = getgid();
 
   // No entries
   umask(0);
 
-  return fuse_main(argc, argv, &fs_oper, NULL);
+  // return fuse_main(argc, argv, &fs_oper, NULL);
+  
+  // return 1;
 }
 

@@ -32,8 +32,11 @@ int getnodebypath(const char *path, struct myinode *parent, struct myinode *chil
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
   if(!dir_find(parent, name, len, node)) {
     errno = ENOENT;
+    free(node);
     return 0;
   }
+
+  // free(name);
 
   if(*end == '\0') {
     // Last node in path
@@ -73,22 +76,31 @@ int dir_add(ino_t pi_id, ino_t ci_id, int blk, char *name) {
 }
 
 int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *child) {
-  
-  struct mydirent *pdir = (struct mydirent *) fs+parent->direct_blk[0]*BLOCKSIZE;
+  // printf("%s", path);
+  struct mydirent *pdir = (struct mydirent *)malloc(sizeof(struct mydirent));
+  memcpy(pdir, fs+parent->direct_blk[0]*BLOCKSIZE, BLOCKSIZE);
+  // struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]*BLOCKSIZE);
+
+  read_dirent(parent->direct_blk[0]);
 
   if(strlen(name)>MAX_NAME_LEN) {
     errno = ENAMETOOLONG;
+    free(pdir);
     return 0;
   }
 
-  for(int i=2;i<59;i++) { //search all subs from 2 (0 and 1 are for . and ..)
+  for(int i=2; i<SUB_NO; i++) { //search all subs from 2 (0 and 1 are for . and ..)
+    printf("%d", pdir->sub_id[i]);
     if(pdir->sub_id[i]==-1) { //if the directory can hold more files/dirs
       strcpy(pdir->subs[i], name); //copy the name of the file/dir
       pdir->sub_id[i]=child->st_id; //map the name to inode of file/dir
+      memcpy(fs+parent->direct_blk[0]*BLOCKSIZE, pdir, BLOCKSIZE);
+      free(pdir);
       return 1;
     }
   }
 
+  free(pdir);
   errno = EMLINK; //directory cannot hold more files/dirs
 
   return 0;
@@ -96,10 +108,10 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
 }
 
 int dir_remove(struct myinode *parent, struct myinode *child, const char *name) {
-  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]);
+  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]*BLOCKSIZE);
 
   if(S_ISDIR(child->st_mode)) {
-    struct mydirent *cdir = (struct mydirent *) (fs+child->direct_blk[0]);
+    struct mydirent *cdir = (struct mydirent *) (fs+child->direct_blk[0]*BLOCKSIZE);
 
     for(int i=2; i<SUB_NO; i++) { //check if directory is empty
       if(cdir->sub_id[i]!=-1) {
@@ -127,7 +139,7 @@ int dir_remove(struct myinode *parent, struct myinode *child, const char *name) 
 }
 
 int dir_find(struct myinode *parent, const char *name, int namelen, struct myinode *child) {
-  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]); //get dirent of parent
+  struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]*BLOCKSIZE); //get dirent of parent
 
   for(int i=2;i<59;i++) { //search all subs from 2 (0 and 1 are for . and ..)
     if(pdir->sub_id[i]!=-1) { //if it maps to a valid inode
