@@ -157,6 +157,7 @@ static int inode_entry(const char *path, mode_t mode) {
 
 static int fs_getattr(const char *path, struct stat *stbuf) {
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(node, 0, INODE_SIZE);
   if(!getnodebypath(path, root, node)) {
     return -errno;
   }
