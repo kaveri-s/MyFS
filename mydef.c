@@ -59,10 +59,10 @@ int dir_add(ino_t pi_id, ino_t ci_id, int blk, char *name) {
 
   //set self and parent inodes
   strncpy(dir->subs[0], ".", 1);
-  dir->sub_id[0] = pi_id;
+  dir->sub_id[0] = ci_id;
   
   strncpy(dir->subs[1], "..", 2);
-  dir->sub_id[1] = ci_id;
+  dir->sub_id[1] = pi_id;
 
   //sub_id of -1 means that the directory can map a file name and id at that index
   for(int i=2;i<SUB_NO; i++) {
@@ -81,7 +81,7 @@ int dir_add_alloc(struct myinode *parent, const char *name, struct myinode *chil
   memcpy(pdir, fs+parent->direct_blk[0]*BLOCKSIZE, BLOCKSIZE);
   // struct mydirent *pdir = (struct mydirent *) (fs+parent->direct_blk[0]*BLOCKSIZE);
 
-  read_dirent(parent->direct_blk[0]);
+  // read_dirent(parent->direct_blk[0]);
 
   if(strlen(name)>MAX_NAME_LEN) {
     errno = ENAMETOOLONG;
@@ -124,18 +124,18 @@ int dir_remove(struct myinode *parent, struct myinode *child, const char *name) 
 
   for(int i=0; i<child->st_blocks; i++) {
     memset(fs+child->direct_blk[i]*BLOCKSIZE, 0, BLOCKSIZE); //clear the child's directory entry/file contents
-    memcpy(fs+child->direct_blk[i]*sizeof(int), &empty, sizeof(int));
+    memcpy(fs+BLOCKSIZE+child->direct_blk[i]*sizeof(int), &empty, sizeof(int));
   }
 
   for(int i=2;i<SUB_NO;i++) { //reset child's name and inode id in the parent dirent
     if(strcmp(name, pdir->subs[i])==0) {
       memset(pdir->subs[i], 0, MAX_NAME_LEN);
       pdir->sub_id[i]=-1;
-      return 0;
+      return 1;
     }
   }
 
-  errno = ENOENT;
+  errno=ENOENT;
 
   return 0;
 }

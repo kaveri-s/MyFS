@@ -2,24 +2,24 @@
 #include<sys/time.h>
 
 
-int read_inode(ino_t i) {
-    struct myinode *ino = (struct myinode *)malloc(sizeof(struct myinode));
-    memcpy(ino, fs, INODE_SIZE);
-    printf("\nId: %d", ino->st_id);
-    printf("\nMode: %d", ino->st_mode);
-    printf("\nHard Links: %d", ino->st_nlink);
-    printf("\nSize: %d", ino->st_size);
-    printf("\nBlocks: %d", ino->st_blocks);
-    printf("\nUID: %d", ino->st_uid);
-    printf("\nGID: %d", ino->st_gid);
-    printf("\nAT: %d", ino->st_atim);
-    printf("\nMT: %d", ino->st_mtim);
-    printf("\nBT: %d\n", ino->st_ctim);
-    for(int i=0; i<ino->st_blocks;i++)
-        printf("Block no %d mapped to: %d\n", i, ino->direct_blk[i]);
-    free(ino);
-    return 1;
-}
+// int read_inode(ino_t i) {
+//     struct myinode *ino = (struct myinode *)malloc(sizeof(struct myinode));
+//     memcpy(ino, fs, INODE_SIZE);
+//     printf("\nId: %d", ino->st_id);
+//     printf("\nMode: %d", ino->st_mode);
+//     printf("\nHard Links: %d", ino->st_nlink);
+//     printf("\nSize: %d", ino->st_size);
+//     printf("\nBlocks: %d", ino->st_blocks);
+//     printf("\nUID: %d", ino->st_uid);
+//     printf("\nGID: %d", ino->st_gid);
+//     printf("\nAT: %d", ino->st_atim);
+//     printf("\nMT: %d", ino->st_mtim);
+//     printf("\nBT: %d\n", ino->st_ctim);
+//     for(int i=0; i<ino->st_blocks;i++)
+//         printf("Block no %d mapped to: %d\n", i, ino->direct_blk[i]);
+//     free(ino);
+//     return 1;
+// }
 
 int read_dirent(int blk) {
     struct mydirent *dir = (struct mydirent *)malloc(sizeof(struct mydirent));
@@ -55,37 +55,57 @@ int free_blocks() {
 void openfile() {
     const char *filepath = "/home/kaveri/Desktop/myfs";
 
-    int fd = open(filepath, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
-    if (fd == -1) {
-        perror("Error opening file for writing");
-        exit(EXIT_FAILURE);
+    int fd;
+
+    size_t fssize = BLOCK_NO*BLOCKSIZE;
+
+    if((fd = open(filepath, O_RDWR, (mode_t)0600))==-1){
+        fd = open(filepath, O_RDWR | O_CREAT | O_TRUNC, (mode_t)0600);
+        if (fd == -1) {
+            perror("Error opening file for writing");
+            exit(EXIT_FAILURE);
+        }
+
+        // Stretch the file size to the size of the (mmapped) array of char
+        int result = lseek(fd, fssize-1, SEEK_SET);
+        if (result == -1) {
+	        close(fd);
+	        perror("Error calling lseek() to 'stretch' the file");
+	        exit(EXIT_FAILURE);
+        }
+
+        result = write(fd, "", 1);
+        if (result != 1) {
+	        close(fd);
+	        perror("Error writing last byte of the file");
+	        exit(EXIT_FAILURE);
+        }
+
+        fs = mmap(0, fssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (fs == MAP_FAILED) {
+	        close(fd);
+	        perror("Error mmapping the file");
+	        exit(EXIT_FAILURE);
+        }
+
+        init_fs();
+
+        return;
+
     }
 
-    // Stretch the file size to the size of the (mmapped) array of char
+    
 
-    size_t fssize = BLOCK_NO*BLOCKSIZE+1; // + \0 null character
-
-    int result = lseek(fd, fssize-1, SEEK_SET);
-    if (result == -1) {
-	    close(fd);
-	    perror("Error calling lseek() to 'stretch' the file");
-	    exit(EXIT_FAILURE);
-    }
-
-    result = write(fd, "", 1);
-    if (result != 1) {
-	    close(fd);
-	    perror("Error writing last byte of the file");
-	    exit(EXIT_FAILURE);
-    }
-
-    fs = (char *)mmap(0, fssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    fs = mmap(0, fssize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (fs == MAP_FAILED) {
 	    close(fd);
 	    perror("Error mmapping the file");
 	    exit(EXIT_FAILURE);
     }
-    printf("fs created");
+
+    memcpy(root, fs, INODE_SIZE);
+
+    printf("FS Synced");
 }
 
 int make_rootnode(ino_t st_id, file_type type, int blk, mode_t mode){

@@ -42,9 +42,11 @@ static void set_time(struct myinode *node, int param) {
 static int initstat(struct myinode *node, mode_t mode) {
   struct stat *stbuf = (struct stat*)malloc(sizeof(struct stat));
   memset(stbuf, 0, sizeof(struct stat));
-  set_stat(node, stbuf);
-  stbuf->st_mode  = mode;
-  stbuf->st_nlink = 0;
+  node->st_mode = mode;
+  node->st_uid = getuid();
+  node->st_gid = getgid();
+  node->st_blocks = 0;
+  node->st_nlink = 0;
   set_time(node, AT | MT | CT);
   free(stbuf);
   return 1;
@@ -79,6 +81,7 @@ static int inode_entry(const char *path, mode_t mode) {
   for(int b=3; b<BLOCK_NO; b++) {
     if(memcmp(fs+BLOCKSIZE+b*sizeof(int), &empty, sizeof(int))==0) {
       blk = b;
+      break;
     }
   }
 
@@ -93,9 +96,6 @@ static int inode_entry(const char *path, mode_t mode) {
   for(int i=1; i<INODE_NO; i++) {
     memcpy(node, (struct myinode *)(fs+i*INODE_SIZE), INODE_SIZE);
     if(node->type==FREE) {
-      node->st_uid = getuid();
-      node->st_gid = getgid();
-      node->st_blocks = 0;
 
       if(!initstat(node, mode)) {
         free(node);
@@ -103,7 +103,7 @@ static int inode_entry(const char *path, mode_t mode) {
         return -errno;
       }
 
-      read_inode(parent->st_id);
+      // read_inode(parent->st_id);
 
       // Add entry in parent directory
       if(!dir_add_alloc(parent, get_basename(path), node)) {
@@ -114,33 +114,33 @@ static int inode_entry(const char *path, mode_t mode) {
 
       else {
         if(S_ISDIR(node->st_mode)) {
-          if(!dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
+          if(dir_add(parent->st_id, node->st_id, blk, get_basename(path))) {
             node->st_size=BLOCKSIZE;
+            node->st_nlink=2;
             node->type = DIRECTORY;
+            parent->st_nlink++;
             memcpy(fs+BLOCKSIZE+blk*sizeof(int), &full, sizeof(int));
+          }
+          else {
             free(node);
             free(parent);
             return -errno;
           }
-          else {
-            node->st_nlink=2;
-            node->st_blocks=1;
-            parent->st_nlink++;
-          }
         }
         else {
+          node->st_nlink = 1;
           node->type = ORDINARY;
           memcpy(fs+BLOCKSIZE+blk*sizeof(int), &full, sizeof(int));
-          node->direct_blk[0]=blk;
-          node->st_blocks=1;
         }
+        node->direct_blk[0]=blk;
+        node->st_blocks=1;
         set_time(node, AT|CT|MT);
         set_time(parent, AT|MT);
-        memcpy((fs+(node->st_id)*INODE_SIZE), (void *)node, INODE_SIZE);
-        memcpy(fs+((parent->st_id)*INODE_SIZE), (void *)parent, INODE_SIZE);
+        memcpy(fs+node->st_id*INODE_SIZE, node, INODE_SIZE);
+        memcpy(fs+parent->st_id*INODE_SIZE, parent, INODE_SIZE);
         free(node);
         free(parent);
-        return 1;
+        return 0;
       }
     }
   }
@@ -155,6 +155,22 @@ static int inode_entry(const char *path, mode_t mode) {
 
 // Fuse Operations
 
+static int fs_flush(const char *path, struct fuse_file_info *fi) {
+	return 0;
+}
+
+static int fs_utimens(const char *path, const struct timespec tv[2]) {
+  struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(node, 0, INODE_SIZE);
+  if(!getnodebypath(path, root, node)) {
+    return -errno;
+  }
+
+  set_time(node, AT|CT|MT);
+
+	return 0;
+}
+
 static int fs_getattr(const char *path, struct stat *stbuf) {
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
   memset(node, 0, INODE_SIZE);
@@ -164,7 +180,7 @@ static int fs_getattr(const char *path, struct stat *stbuf) {
 
   set_stat(node, stbuf);
 
-  read_inode(node->st_id);
+  // read_inode(node->st_id);
 
   return 0;
 }
@@ -172,8 +188,6 @@ static int fs_getattr(const char *path, struct stat *stbuf) {
 static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fi) {
   struct myinode *current = (struct myinode *)malloc(sizeof(struct myinode));
 
-  read_inode(current->st_id);
-  
   if(!getnodebypath(path, root, current)) {
     return -errno;
   }
@@ -189,7 +203,7 @@ static int fs_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t
     char *parent_path = get_dirname(path);
     struct myinode *parent = (struct myinode *)malloc(sizeof(struct myinode)); ;
     getnodebypath(parent_path, root, parent);
-    read_inode(parent->st_id);
+    // read_inode(parent->st_id);
     struct stat *pst = (struct stat *)malloc(sizeof(struct stat));
     set_stat(parent, pst);
     free(parent_path);
@@ -250,6 +264,16 @@ static int fs_unlink(const char *path) {
     free(name);
     return -errno;
   }
+
+  child->type = FREE;
+  child->st_blocks = 0;
+  child->st_size = 0;
+  child->st_nlink = 0;
+  parent->st_nlink--;
+
+  memcpy(fs+parent->st_id*INODE_SIZE, parent, INODE_SIZE);
+  memcpy(fs+child->st_id*INODE_SIZE, child, INODE_SIZE);
+
   free(name);
 
   return 0;
@@ -278,6 +302,16 @@ static int fs_rmdir(const char *path) {
     free(name);
     return -errno;
   }
+
+  child->type = FREE;
+  child->st_blocks = 0;
+  child->st_size = 0;
+  child->st_nlink = 0;
+  parent->st_nlink--;
+
+  memcpy(fs+child->st_id*INODE_SIZE, child, INODE_SIZE);
+  memcpy(fs+parent->st_id*INODE_SIZE, parent, INODE_SIZE);
+
   free(name);
 
   free(parent);
@@ -289,6 +323,20 @@ static int fs_rmdir(const char *path) {
 static int fs_creat(const char *path, mode_t mode, struct fuse_file_info *fi) {
 
   int res = inode_entry(path, mode);
+
+  struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(node, 0, INODE_SIZE);
+
+  if(!getnodebypath(path, root, node)) {
+    return -errno;
+  }
+
+  //Store filehandle information in fuse
+  struct filehandle *fh = malloc(sizeof(struct filehandle));
+  fh->node    = node;
+  fh->o_flags = fi->flags;
+  fi->fh = (uint64_t) fh;
+
   if(res) return res;
 
   return 0;
@@ -296,6 +344,8 @@ static int fs_creat(const char *path, mode_t mode, struct fuse_file_info *fi) {
 
 static int fs_open(const char *path, struct fuse_file_info *fi) {
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(node, 0, INODE_SIZE);
+
   if(!getnodebypath(path, root, node)) {
     return -errno;
   }
@@ -344,11 +394,11 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
 
   struct filehandle *fh = (struct filehandle *) fi->fh;
 
-  struct myinode *node = fh->node;
+  struct myinode *node = (struct myinode *)fh->node;
 
   blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
 
-  if(req_blocks>3) {
+  if(req_blocks>3 || MAX_MAP*BLOCKSIZE < offset+size) { //last byte of file should be used to store NULL
     errno = EFBIG;
     return -errno;
   }
@@ -399,6 +449,8 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
   //   printf("%c", fs[i]);
   // }
 
+  memcpy(fs+node->st_id*INODE_SIZE, node, INODE_SIZE);
+
   return size;
 }
 
@@ -412,7 +464,9 @@ static struct fuse_operations fs_oper = {
   .create        = fs_creat,
   .open         = fs_open,
   .read         = fs_read,
-  .write        = fs_write
+  .write        = fs_write,
+  .flush        = fs_flush,
+  .utimens      = fs_utimens
 };
 
 
@@ -422,7 +476,6 @@ static struct fuse_operations fs_oper = {
 
 int main(int argc, char *argv[]) {
   // mtrace();
-  // openfile();
 
   fs = malloc(BLOCK_NO*BLOCKSIZE);
   memset(fs, 0, BLOCK_NO*BLOCKSIZE);
@@ -431,7 +484,7 @@ int main(int argc, char *argv[]) {
   root = (struct myinode *)malloc(sizeof(struct myinode));
   memset(root, 0, INODE_SIZE);
 
-  init_fs();
+  openfile();
 
   set_time(root, AT|CT|MT);
   // free_blocks();
