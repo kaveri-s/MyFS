@@ -361,6 +361,67 @@ static int fs_open(const char *path, struct fuse_file_info *fi) {
   return 0;
 }
 
+static int fs_truncate(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+  int full=1, empty=0;
+
+  struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
+  memset(node, 0, INODE_SIZE);
+
+  if(!getnodebypath(path, root, node)) {
+    return -errno;
+  }
+
+  // Calculate new block count
+  blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
+
+  if(req_blocks>3 || MAX_MAP*BLOCKSIZE < offset+size) { //last byte of file should be used to store NULL
+    errno = EFBIG;
+    return -errno;
+  }
+
+  blkcnt_t oldblkcnt = node->st_blocks;
+
+  if(node->st_blocks < req_blocks) {
+
+    blkcnt_t extra = req_blocks - node->st_blocks;
+    int blks[extra];
+    for(int i=0; i<extra; i++){
+      int blk=0;
+      for(int b=3;b<BLOCK_NO; b++) {
+        if(memcmp(fs+BLOCKSIZE+b*sizeof(int), &empty, sizeof(int))==0)
+          blk = b;
+      }
+      if(blk == 0){
+        errno = ENOMEM;
+        return -errno;
+      }
+      blks[i]=blk;
+    }
+    for(int i=0;i<extra;i++) {
+      node->direct_blk[node->st_blocks+i]=blks[i];
+      memcpy(fs+BLOCKSIZE+blks[i]*sizeof(int), &full, sizeof(int));
+    }
+  } else if(oldblkcnt > req_blocks) {
+
+    for(int i=req_blocks;i<oldblkcnt;i++) {
+      memcpy(fs+BLOCKSIZE+node->direct_blk[i]*sizeof(int), &empty, sizeof(int));
+      memset(fs+node->direct_blk[i]*BLOCKSIZE, &empty, BLOCKSIZE);
+      node->direct_blk[i]=0;
+    }
+  }
+
+  // Update file size
+  node->st_size = size;
+  node->st_blocks = req_blocks;
+
+  set_time(node, CT | MT);
+
+  memcpy(fs+node->st_id*INODE_SIZE, node, INODE_SIZE);
+
+
+  return 0;
+}
+
 static int fs_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
   struct filehandle *fh = (struct filehandle *) fi->fh;
 
@@ -466,7 +527,8 @@ static struct fuse_operations fs_oper = {
   .read         = fs_read,
   .write        = fs_write,
   .flush        = fs_flush,
-  .utimens      = fs_utimens
+  .utimens      = fs_utimens,
+  .truncate     = fs_truncate
 };
 
 
