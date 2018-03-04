@@ -405,7 +405,7 @@ static int fs_truncate(const char *path, char *buf, size_t size, off_t offset, s
 
     for(int i=req_blocks;i<oldblkcnt;i++) {
       memcpy(fs+BLOCKSIZE+node->direct_blk[i]*sizeof(int), &empty, sizeof(int));
-      memset(fs+node->direct_blk[i]*BLOCKSIZE, &empty, BLOCKSIZE);
+      memset(fs+node->direct_blk[i]*BLOCKSIZE, 0, BLOCKSIZE);
       node->direct_blk[i]=0;
     }
   }
