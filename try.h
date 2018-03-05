@@ -18,7 +18,7 @@
 #define INODE_NO 45
 #define SUB_NO 59
 #define MAX_NAME_LEN 64
-#define MAX_MAP 3
+#define MAX_MAP 5
 
 #define AT (1 << 0)
 #define CT (1 << 1)

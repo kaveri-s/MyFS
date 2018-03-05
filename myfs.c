@@ -459,7 +459,7 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
 
   blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
 
-  if(req_blocks>3 || MAX_MAP*BLOCKSIZE < offset+size) { //last byte of file should be used to store NULL
+  if(req_blocks>MAX_MAP || MAX_MAP*BLOCKSIZE < offset+size) { //last byte of file should be used to store NULL
     errno = EFBIG;
     return -errno;
   }
