@@ -361,7 +361,7 @@ static int fs_open(const char *path, struct fuse_file_info *fi) {
   return 0;
 }
 
-static int fs_truncate(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi) {
+static int fs_truncate(const char *path, off_t size) {
   int full=1, empty=0;
 
   struct myinode *node = (struct myinode *)malloc(sizeof(struct myinode));
@@ -372,9 +372,9 @@ static int fs_truncate(const char *path, char *buf, size_t size, off_t offset, s
   }
 
   // Calculate new block count
-  blkcnt_t req_blocks = (offset + size + BLOCKSIZE - 1) / BLOCKSIZE;
+  blkcnt_t req_blocks = (size + BLOCKSIZE - 1) / BLOCKSIZE;
 
-  if(req_blocks>3 || MAX_MAP*BLOCKSIZE < offset+size) { //last byte of file should be used to store NULL
+  if(req_blocks>MAX_MAP || MAX_MAP*BLOCKSIZE < size) { //last byte of file should be used to store NULL
     errno = EFBIG;
     return -errno;
   }
@@ -515,6 +515,19 @@ static int fs_write(const char *path, const char *buf, size_t size, off_t offset
   return size;
 }
 
+static int fs_release(const char *path, struct fuse_file_info *fi) {
+  struct filehandle *fh = (struct filehandle *) fi->fh;
+
+  // If the file was deleted but we could not free it due to open file descriptors,
+  // free the node and its data after all file descriptors have been closed.
+  free(fh->node);
+
+  // Free "file handle"
+  free(fh);
+
+  return 0;
+}
+
 static struct fuse_operations fs_oper = {
   .getattr      = fs_getattr,
   .readdir      = fs_readdir,
@@ -528,7 +541,8 @@ static struct fuse_operations fs_oper = {
   .write        = fs_write,
   .flush        = fs_flush,
   .utimens      = fs_utimens,
-  .truncate     = fs_truncate
+  .truncate     = fs_truncate,
+  .release      = fs_release
 };
 
 
